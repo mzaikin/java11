@@ -1,0 +1,219 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>5.3.&nbsp; Use Stream API with Files</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch05.html" title="Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)"><link rel="prev" href="ch05s02.html" title="5.2.&nbsp; Use Files class to check, delete, copy or move a file or directory"><link rel="next" href="ch06.html" title="Chapter&nbsp;6.&nbsp;Migration to a Modular Application"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">5.3.&nbsp;
+					 Use Stream API with <code class="code">Files</code>
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch05s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c5s3"></a>5.3.&nbsp;
+					 Use Stream API with <code class="code">Files</code>
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JAVA_NIO_FILES_JAVADOC" title="Java NIO.2 Files class JavaDoc">[JAVA_NIO_FILES_JAVADOC]</a> <code class="code">Files</code> class JavaDoc								
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					The utility class <code class="code">java.nio.file.Files</code> was first introduced in Java 7.0 as part of Java NIO. The JDK 8.0
+					API adds a couple of additional methods which enables us to use functional streams with files.
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">Files.find(...)</code>
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+public static Stream&lt;Path&gt; find(Path start,
+                                int maxDepth,
+                                BiPredicate&lt;Path,BasicFileAttributes&gt; matcher,
+                                FileVisitOption... options)
+                         throws IOException
+
+								</pre><p>
+								The <code class="code">find(...)</code> returns a <code class="code">Stream</code> that is lazily populated with <code class="code">Path</code> by searching for files in a file tree
+								rooted at a given starting file.
+							</p>
+							<p>
+								The <code class="code">find(...)</code> method walks the file tree in exactly the manner specified by the <code class="code">walk(...)</code> method. For
+								each file encountered, the given <code class="code">BiPredicate</code> is invoked with its <code class="code">Path</code> and
+								<code class="code">BasicFileAttributes</code>. The <code class="code">Path</code> object is obtained as if by resolving the relative path against
+								start and is only included in the returned <code class="code">Stream</code> if the <code class="code">BiPredicate</code> returns
+								<code class="code">true</code>. Compare to calling filter on the <code class="code">Stream</code> returned by <code class="code">walk(...)</code> method, this
+								method may be more efficient by avoiding redundant retrieval of the <code class="code">BasicFileAttributes</code>.
+							</p>
+							<p>
+								The returned stream encapsulates one or more <code class="code">DirectoryStreams</code>. If timely disposal of file system resources
+								is required, the "try-with-resources" construct should be used to ensure that the stream's <code class="code">close()</code> method is invoked
+								after the stream operations are completed. Operating on a closed stream will result in an <code class="code">IllegalStateException</code>.
+							</p>
+							<p>
+								If an <code class="code">IOException</code> is thrown when accessing the directory after returned from this method, it is wrapped in an
+								<code class="code">UncheckedIOException</code> which will be thrown from the method that caused the access to take place.
+							</p>
+							<p>
+								The next example demonstrates how to find files in a directory or it's sub-directories:
+								</p><pre class="programlisting">
+C:\temp
+    LibPathFinder.java
+								</pre><p>
+								</p><pre class="programlisting">
+
+public static void main(String[] args) throws IOException {
+    Path start = Paths.get("C:\\temp");
+    int maxDepth = 5;
+    try (Stream&lt;Path&gt; stream = Files.find(start, maxDepth, (path, attr) -&gt; String.valueOf(path).endsWith(".java"))) {
+        String joined = stream
+                .sorted()
+                .map(String::valueOf)
+                .collect(Collectors.joining("; "));
+        System.out.println("Found: " + joined);
+    }
+}
+
+								</pre><p>
+							</p>
+							<p>	
+								The method <code class="code">find(...)</code> accepts three arguments: 
+								</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+										<p>
+											The directory path <code class="code">start</code> is the initial starting point
+										</p>									
+									</li><li class="listitem">
+										<p>
+											The <code class="code">maxDepth</code> defines the maximum folder depth to be searched
+										</p>									
+									</li><li class="listitem">
+										<p>
+											A matching predicate defines the search logic
+										</p>									
+									</li></ol></div><p>
+								In the above example we search for all Java files (filename ends with <code class="code">.java</code>) under <code class="code">C:\temp</code> directory (limited depth is 
+								5 sub-directories).
+							</p>
+							<p>
+								Sample output:
+								</p><pre class="programlisting">
+Found: C:\temp\LibPathFinder.java
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Files.lines(...)</code>
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+public static Stream&lt;String&gt; lines(Path path)  throws IOException
+
+								</pre><p>
+								The <code class="code">lines()</code> method reads all lines from a file as a <code class="code">Stream</code>. Bytes from the file are decoded
+								into characters using the UTF-8 charset.
+							</p>
+							<p>
+								The next example demonstrates how to print a file to console:
+								</p><pre class="programlisting">
+
+public static void main(String[] args) throws IOException {
+    Path f = Paths.get("C:\\temp\\LibPathFinder.java");
+    try (Stream&lt;String&gt; stream = Files.lines(f)) {
+        stream.forEach(System.out::println);
+    }
+}
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Files.readAllLines(...)</code>
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+public static List&lt;String&gt; readAllLines(Path path) throws IOException
+
+								</pre><p>
+								The <code class="code">readAllLines(...)</code> method reads all lines from a file into a <code class="code">List</code>
+								of <code class="code">String</code>s. Bytes from the file are decoded into characters using the UTF-8 charset.
+							</p>
+							<p>
+								The next example demonstrates how to print a file to console:
+								</p><pre class="programlisting">
+
+public static void main(String[] args) throws IOException {
+    Path f = Paths.get("C:\\temp\\LibPathFinder.java");
+    List&lt;String&gt; list = Files.readAllLines(f);
+    list.stream().forEach(System.out::println);
+}
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Files.walk(...)</code>
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+public static Stream&lt;Path&gt; walk(Path start,
+                                int maxDepth,
+                                FileVisitOption... options)
+                         throws IOException
+
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">walk(...)</code> returns a <code class="code">Stream</code> that is lazily populated with <code class="code">Path</code> by walking the
+								file tree rooted at a given starting file. The file tree is traversed depth-first, the elements in the stream are
+								<code class="code">Path</code> objects that are obtained as if by resolving the relative path against start.
+							</p>
+							<p>
+								The stream walks the file tree as elements are consumed. The <code class="code">Stream</code> returned is guaranteed to have at least
+								one element, the starting file itself. For each file visited, the stream attempts to read its <code class="code">BasicFileAttributes</code>.
+								If the file is a directory and can be opened successfully, entries in the directory, and their descendants will follow
+								the directory in the stream as they are encountered. When all entries have been visited, then the directory is closed.
+								The file tree walk then continues at the next sibling of the directory.
+							</p>
+							<p>
+								The <code class="code">maxDepth</code> parameter is the maximum number of levels of directories to visit. A value of <code class="code">0</code> means
+								that only the starting file is visited, unless denied by the security manager. A value of
+								<code class="code">MAX_VALUE</code> may be used to indicate that all levels should be visited.
+							</p>
+							<p>
+								The next example demonstrates how to list all files and sub-directories in a directory:
+								</p><pre class="programlisting">
+C:\temp
+&#9474;   A.class
+&#9474;   A.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;dir1
+        B.class
+        B.java
+								</pre><p>
+								</p><pre class="programlisting">
+
+public static void main(String[] args) throws IOException {
+    Path start = Paths.get("C:\\temp");
+    int maxDepth = 5;
+    try (Stream&lt;Path&gt; stream = Files.walk(start, maxDepth)) {
+        stream.forEach(System.out::println);
+    }
+}
+
+								</pre><p>
+								Sample output:
+								</p><pre class="programlisting">
+C:\temp
+C:\temp\A.class
+C:\temp\A.java
+C:\temp\dir1
+C:\temp\dir1\B.class
+C:\temp\dir1\B.java						
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch05s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch05.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.2.&nbsp;
+					 Use <code class="code">Files</code> class to check, delete, copy or move a file or directory
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;6.&nbsp;Migration to a Modular Application</td></tr></table></div></body></html>

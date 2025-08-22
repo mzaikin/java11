@@ -1,0 +1,221 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>8.2.&nbsp; Use lambda expressions and method references</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch08.html" title="Chapter&nbsp;8.&nbsp;Lambda Expressions"><link rel="prev" href="ch08.html" title="Chapter&nbsp;8.&nbsp;Lambda Expressions"><link rel="next" href="ch08s03.html" title="8.3.&nbsp; Use built-in functional interfaces including Predicate, Consumer, Function, and Supplier"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">8.2.&nbsp;
+					Use lambda expressions and method references
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;8.&nbsp;Lambda Expressions</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch08s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c8s2"></a>8.2.&nbsp;
+					Use lambda expressions and method references
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 3, Section 5. Method and Constructor References
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					Method references can be seen as shorthand for <span class="bold"><strong>lambdas calling only a specific method</strong></span>. 
+					The basic idea is that if a lambda represents "call this method directly". It is best to refer to the method by name rather 
+					than by a description of how to call it. A method reference lets you create a lambda expression from an existing method
+					implementation. By referring to a method name explicitly, your code can gain better readability.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Lambdas created from constructors are often referred to as constructor references, which are considered for exam to be
+						a subset of method references.
+					</p>
+				</td></tr></table></div>
+				<p>
+					When you need a method reference, the target reference is placed before the delimiter <code class="code">::</code> and the
+					name of the method is provided after it. For example, <code class="code">String::toUpperCase</code> is a method reference to
+					the method <code class="code">toUpperCase</code> defined in the <code class="code">String</code> class. The method reference is shorthand
+					for the lambda expression <code class="code">(String s) -&gt; s.toUpperCase();</code>.
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Remember that no parentheses (round brackets) are needed in method references because you are not actually calling the method.
+					</p>
+				</td></tr></table></div>
+				<p>
+					There are four types of method reference:
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<span class="bold"><strong>Reference to a static method</strong></span>
+							</p>
+							<p>
+								A non-constructor method reference consists of a qualifier, followed by the <code class="code">::</code> delimiter, followed by an identifier.
+								The qualifier is a type for static methods.
+							</p>
+							<p>
+								Syntax:
+								</p><pre class="programlisting">
+Class::staticMethodName
+								</pre><p>
+							</p>
+							<p>
+								Refactoring example:
+								</p><pre class="programlisting">
+
+IntFunction&lt;String&gt; f1 = (i) -&gt; String.valueOf(i);
+System.out.println(f1.apply(100));
+
+								</pre><p>
+								As you can see in the following code, we made reference to <code class="code">valueOf</code> static method in <code class="code">String</code> class:
+								</p><pre class="programlisting">
+
+IntFunction&lt;String&gt; f1 = String::valueOf;
+System.out.println(f1.apply(100));
+
+								</pre><p>
+							</p>
+							<p>
+								In this case, the method reference is equivalent to a lambda expression that supplies the parameters of the method.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong>Reference to a constructor</strong></span>
+							</p>
+							<p>
+								A constructor reference consists of a qualifier, followed by the <code class="code">::</code> delimiter, followed by the keyword
+								<code class="code">new</code>. The qualifier type must support the creation of instances; for example, it cannot be the name of an
+								abstract class or interface.
+							</p>
+							<p>
+								Syntax:
+								</p><pre class="programlisting">
+ClassName::new
+								</pre><p>
+							</p>
+							<p>
+								Refactoring example:
+								</p><pre class="programlisting">
+
+Function&lt;char[], String&gt; f1 = (arr) -&gt; new String(arr);
+System.out.println(f1.apply(new char[] {'H', 'i'}));
+
+								</pre><p>
+								Constructor reference expression <code class="code">String::new</code> equates to lambda expression <code class="code">(char[] arr) -&gt; new String(arr)</code>. A
+								lambda for instantiating <code class="code">String</code> is assigned to <code class="code">Function</code>. The subsequent
+								<code class="code">Function.apply(...)</code> expression executes this lambda, returning the <code class="code">String</code> instance.
+								</p><pre class="programlisting">
+
+Function&lt;char[], String&gt; f1 = String::new;
+System.out.println(f1.apply(new char[] {'H', 'i'}));
+
+								</pre><p>
+							</p>
+							<p>
+								In a constructor reference expression, you do not specify the exact constructor. Instead, you simply write <code class="code">::new</code>. When
+								a class declares multiple constructors, the compiler will check the type of the functional interface with all of the constructors
+								and choose the best match.
+								</p><pre class="programlisting">
+
+// Java compiler infers the right constructor to call based
+// on the context in which the constructor reference appears
+
+Function&lt;char[], String&gt;       f1 = String::new;
+Function&lt;StringBuffer, String&gt; f2 = String::new;
+
+System.out.println(f1.apply(new char[] {'H', 'i'}));
+System.out.println(f2.apply(new StringBuffer().append("Hello")));
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong>Reference to an instance method of an arbitrary object of a particular type</strong></span>
+							</p>
+							<p>
+								Syntax:
+								</p><pre class="programlisting">
+Class::instanceMethodName
+								</pre><p>
+							</p>
+							<p>
+								Reference to an instance method of an arbitrary object of a particular type refers to a non-static method that is not bound
+								to a receiver. For example, <code class="code">String::trim</code> is a non-static method reference that identifies the non-
+								static <code class="code">trim()</code> method of the <code class="code">String class</code>. Because a non-static method requires a target
+								object, which in this example is a <code class="code">String</code> object, <code class="code">trim()</code> will be invoked on this object.
+							</p>
+							<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+								<p>
+									This can be a little confusing. So we are calling a non-static method but using a class name. Actually
+									<span class="bold"><strong>the instance of the class is passed when the method is called</strong></span>.
+								</p>
+							</td></tr></table></div>
+							<p>
+								<code class="code">String::trim</code> is equivalent to lambda <code class="code">(String str) -&gt; { return str.trim(); }</code>.
+							</p>
+							<p>
+								In this type of method references, the first parameter becomes the target of the method. For example,
+								<code class="code">String::compareToIgnoreCase</code> is the same as <code class="code">(x, y) -&gt; x.compareToIgnoreCase(y)</code>.
+							</p>
+							<p>
+								Refactoring example:
+								</p><pre class="programlisting">
+
+BiFunction&lt;String, String, Boolean&gt; f1 = (s1, s2) -&gt; s1.equalsIgnoreCase(s2);
+System.out.println(f1.apply("Hello", "HELLO"));
+
+								</pre><p>
+								</p><pre class="programlisting">
+
+BiFunction&lt;String, String, Boolean&gt; f1 = String::equalsIgnoreCase;
+System.out.println(f1.apply("Hello", "HELLO"));
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong>Reference to an instance method of a particular object</strong></span>
+							</p>
+							<p>
+								Syntax:
+								</p><pre class="programlisting">
+object::instanceMethodName
+								</pre><p>
+							</p>
+							<p>
+								Reference to an instance method of a particular object refers to a non-static method that is bound to a receiver.
+							</p>
+							<p>
+								For example, <code class="code">System.out::printf</code> is a non-static method reference that identifies the <code class="code">printf(String format, Object args...)</code>
+								method of the <code class="code">java.io.PrintStream</code> class. This method is bound to the <code class="code">System.out</code> (standard output stream) object
+								(the receiver) and will be invoked on this object. <code class="code">System.out::printf</code> is equivalent to this lambda:
+								</p><pre class="programlisting">
+(String fmt, Object... args) -&gt; System.out.printf(fmt, args);
+								</pre><p>
+							</p>
+							<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+								<p>
+									This kind of method references refers to a situation when you are calling a method in a lambda to an <span class="bold"><strong>external
+									object that already exists</strong></span>. For example, the lambda expression <code class="code">() -&gt; object.toString()</code> can be rewritten as
+									<code class="code">object::toString</code>.
+								</p>
+							</td></tr></table></div>
+							<p>
+								Refactoring example:
+								</p><pre class="programlisting">
+
+Integer i = new Integer(1);
+
+Supplier&lt;String&gt; f1 = () -&gt; i.toString();
+System.out.println(f1.get());
+
+								</pre><p>
+								</p><pre class="programlisting">
+
+Integer i = new Integer(1);
+
+Supplier&lt;String&gt; f1 = i::toString;
+System.out.println(f1.get());
+
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch08s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;8.&nbsp;Lambda Expressions&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;8.3.&nbsp;
+					Use built-in functional interfaces including <code class="code">Predicate</code>, <code class="code">Consumer</code>, <code class="code">Function</code>, and <code class="code">Supplier</code>
+				</td></tr></table></div></body></html>

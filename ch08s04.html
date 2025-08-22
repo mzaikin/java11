@@ -1,0 +1,303 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>8.4.&nbsp; Use primitive and binary variations of base interfaces of java.util.function package</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch08.html" title="Chapter&nbsp;8.&nbsp;Lambda Expressions"><link rel="prev" href="ch08s03.html" title="8.3.&nbsp; Use built-in functional interfaces including Predicate, Consumer, Function, and Supplier"><link rel="next" href="ch09.html" title="Chapter&nbsp;9.&nbsp;Parallel Streams"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">8.4.&nbsp;
+					Use primitive and binary variations of base interfaces of <code class="code">java.util.function</code> package
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s03.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;8.&nbsp;Lambda Expressions</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c8s4"></a>8.4.&nbsp;
+					Use primitive and binary variations of base interfaces of <code class="code">java.util.function</code> package
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JAVA_UTIL_FUNCTION" title="Java SE 11 Java Doc - Package java.util.function">[JAVA_UTIL_FUNCTION]</a> Java SE 11 Java Doc - Package java.util.function
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					Every Java type is either a reference type (for example, <code class="code">String</code>, <code class="code">Integer</code>, <code class="code">Object</code>,
+					<code class="code">List</code>) or a primitive type (for example, <code class="code">int</code>, <code class="code">double</code>, <code class="code">byte</code>, <code class="code">char</code>).
+					But generic parameters (for example, the <code class="code">T</code> in <code class="code">Consumer&lt;T&gt;</code>) can be bound only to reference types.
+					This is due to how generics are internally implemented.
+				</p>
+				<p>
+					As a result, in Java there is a mechanism to convert a primitive type into a corresponding reference type. This mechanism is called
+					boxing. The opposite approach (that is, converting a reference type into a corresponding primitive type) is called unboxing. Java
+					also has an autoboxing mechanism to facilitate the task for programmers: boxing and unboxing operations are done automatically. For
+					example, this is why the following code is valid (a <code class="code">double</code> gets boxed to a <code class="code">Double</code>):
+					</p><pre class="programlisting">
+
+List&lt;Double&gt; list = new ArrayList&lt;&gt;();
+list.add(12.34);
+list.add(56.78);
+
+					</pre><p>
+				</p>
+				<p>
+					But this comes with a performance cost. Boxed values are essentially a wrapper around primitive types and are stored on the heap.
+					Therefore, boxed values use more memory and require additional memory lookups to fetch the wrapped primitive value. Java 8 brings
+					a specialized version of the functional interfaces in order to avoid autoboxing operations when the inputs or outputs are primitives.
+					For example, in the following code, using an <code class="code">IntPredicate</code> avoids a boxing operation of the value <code class="code">1974</code>:
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface IntPredicate {
+
+    public boolean test(int i);
+
+    ...
+}
+
+
+					</pre><p>
+					</p><pre class="programlisting">
+
+IntPredicate ip = i -&gt; i == 1974;
+ip.test(1974);
+
+					</pre><p>
+					whereas using a <code class="code">Predicate&lt;Integer&gt;</code> would box the argument <code class="code">1974</code> to an <code class="code">Integer</code> object:
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface Predicate&lt;T extends Object&gt; {
+
+    public boolean test(T t);
+
+    ...
+}
+
+
+					</pre><p>
+					</p><pre class="programlisting">
+
+Predicate&lt;Integer&gt; p = i -&gt; i == 1974;
+p.test(1974);
+
+					</pre><p>
+				</p>
+				<p>
+					In general, the names of functional interfaces that have a specialization for the <span class="bold"><strong>input type parameter</strong></span> are preceded by
+					the appropriate primitive type, for example, <code class="code">DoublePredicate</code>, <code class="code">IntConsumer</code>,
+					<code class="code">LongBinaryOperator</code>, <code class="code">IntFunction</code>, and so on.
+				</p>
+				<p>
+					The <code class="code">Function</code> interface has also variants for the <span class="bold"><strong>output type parameter</strong></span>:
+					<code class="code">ToIntFunction&lt;T&gt;</code>, <code class="code">ToDoubleFunction&lt;T&gt;</code>, and so on.
+				</p>
+				<p>
+					</p><div class="table"><a name="d5e3341"></a><p class="title"><b>Table&nbsp;8.1.&nbsp;
+							Common functional interfaces in Java 8
+						</b></p><div class="table-contents">
+						
+						
+						<table class="table" summary="&#xA;Common functional interfaces in Java 8&#xA;" cellspacing="0" cellpadding="5" border="1" width="80%"><colgroup><col width="20%" align="left" class="col1"><col width="20%" align="left" class="col2"><col width="60%" align="left" class="col3"></colgroup><thead><tr><th align="left">Functional interface</th><th align="left">Function descriptor</th><th align="left">Primitive specializations</th></tr></thead><tbody valign="top"><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">Predicate&lt;T&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">T -&gt; boolean</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">IntPredicate</code> - Predicate of one <code class="code">int</code>-valued argument.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongPredicate</code> - Predicate of one <code class="code">long</code>-valued argument.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoublePredicate</code> - Predicate of one <code class="code">double</code>-valued argument.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">Consumer&lt;T&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">T -&gt; void</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">IntConsumer</code> - Function operation that accepts a single <code class="code">int</code>-valued argument and returns no result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongConsumer</code> - Function operation that accepts a single <code class="code">long</code>-valued argument and returns no result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleConsumer</code> - Function operation that accepts a single <code class="code">double</code>-valued argument and returns no result.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">Function&lt;T, R&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">T -&gt; R</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">IntFunction&lt;R&gt;</code> - Function that accepts an <code class="code">int</code>-valued argument and produces a result.
+								    	</p>
+								    	<p>
+								    		<code class="code">IntToDoubleFunction</code> - Function that accepts an <code class="code">int</code>-valued argument and produces a
+								    		<code class="code">double</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">IntToLongFunction</code> - Function that accepts an <code class="code">int</code>-valued argument and produces a
+								    		<code class="code">long</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongFunction&lt;R&gt;</code> - Function that accepts a <code class="code">long</code>-valued argument and produces a result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongToDoubleFunction</code> - Function that accepts a <code class="code">long</code>-valued argument and produces a
+								    		<code class="code">double</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongToIntFunction</code> - Function that accepts a <code class="code">long</code>-valued argument and produces an
+								    		<code class="code">int</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleFunction&lt;R&gt;</code> - Function that accepts a <code class="code">double</code>-valued argument and produces a result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ToIntFunction&lt;T&gt;</code> - Function that produces an <code class="code">int</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ToDoubleFunction&lt;T&gt;</code> - Function that produces a <code class="code">double</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ToLongFunction&lt;T&gt;</code> - Function that produces a <code class="code">long</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleToIntFunction;</code> - Function that accepts a <code class="code">double</code>-valued argument and produces an <code class="code">int</code>-valued
+								    		result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleToLongFunction</code> - Function that accepts a <code class="code">double</code>-valued argument and produces a
+								    		<code class="code">long</code>-valued result.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">Supplier&lt;T&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">() -&gt; T</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">BooleanSupplier</code> - Supplier of <code class="code">boolean</code>-valued results.
+								    	</p>
+								    	<p>
+								    		<code class="code">IntSupplier</code> - Supplier of <code class="code">int</code>-valued results.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongSupplier</code> - Supplier of <code class="code">long</code>-valued results.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleSupplier</code> - Supplier of <code class="code">double</code>-valued results.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">UnaryOperator&lt;T&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">T -&gt; T</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">IntUnaryOperator</code> - Function operation on a single <code class="code">int</code>-valued operand that produces
+								    		an <code class="code">int</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongUnaryOperator</code> - Function operation on a single <code class="code">long</code>-valued operand that produces
+								    		a <code class="code">long</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleUnaryOperator</code> - Function operation on a single <code class="code">double</code>-valued operand that
+								    		produces a <code class="code">double</code>-valued result.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">BinaryOperator&lt;T&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">(T, T) -&gt; T</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">IntBinaryOperator</code> - Function operation upon two <code class="code">int</code>-valued operands and producing an
+								    		<code class="code">int</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">LongBinaryOperator</code> - Function operation upon two <code class="code">long</code>-valued operands and producing a
+								    		<code class="code">long</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">DoubleBinaryOperator</code> - Function operation upon two <code class="code">double</code>-valued operands and producing
+											a <code class="code">double</code>-valued result.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">BiPredicate&lt;L, R&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">(L, R) -&gt; boolean</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+											none
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">BiConsumer&lt;T, U&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">(T, U) -&gt; void</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">ObjIntConsumer&lt;T&gt;</code> - Function operation that accepts an <code class="code">Object</code>-valued and an <code class="code">int</code>-valued
+								    		argument and returns no result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ObjLongConsumer&lt;T&gt;</code> - Function operation that accepts an <code class="code">Object</code>-valued and a <code class="code">long</code>-valued
+								    		argument and returns no result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ObjDoubleConsumer&lt;T&gt;</code> - Function operation that accepts an <code class="code">Object</code>-valued and a <code class="code">double</code>-valued
+								    		argument and returns no result.
+								    	</p>
+								    </td></tr><tr><td align="left" valign="top">
+							    		<p>
+							    			<code class="code">BiFunction&lt;T, U, R&gt;</code>
+								    	</p>
+						   			</td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">(T, U) -&gt; R</code>
+								    	</p>
+								    </td><td align="left" valign="top">
+								    	<p>
+								    		<code class="code">ToIntBiFunction&lt;T, U&gt;</code> - Function that accepts two arguments and produces an <code class="code">int</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ToLongBiFunction&lt;T, U&gt;</code> - Function that accepts two arguments and produces a <code class="code">long</code>-valued result.
+								    	</p>
+								    	<p>
+								    		<code class="code">ToDoubleBiFunction&lt;T, U&gt;</code> - Function that accepts two arguments and produces a <code class="code">double</code>-valued result.
+								    	</p>
+								    </td></tr></tbody></table>
+					</div></div><p><br class="table-break">
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s03.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch08.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch09.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.3.&nbsp;
+					Use built-in functional interfaces including <code class="code">Predicate</code>, <code class="code">Consumer</code>, <code class="code">Function</code>, and <code class="code">Supplier</code>
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;9.&nbsp;Parallel Streams</td></tr></table></div></body></html>

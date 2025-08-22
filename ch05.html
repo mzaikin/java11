@@ -1,0 +1,375 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch04s06.html" title="4.6.&nbsp; Use Collectors with streams, including the groupingBy and partitioningBy operation"><link rel="next" href="ch05s02.html" title="5.2.&nbsp; Use Files class to check, delete, copy or move a file or directory"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s06.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch05s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap5"></a>Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c5s1"></a>5.1.&nbsp;
+					Use <code class="code">Path</code> interface to operate on file and directory paths
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JAVA_NIO_FILE_SUMMARY" title="Java NIO.2 File package summary">[JAVA_NIO_FILE_SUMMARY]</a> Java NIO.2 File package summary
+							</p>
+						</li><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#PATH_OPERATIONS" title="Path operations">[PATH_OPERATIONS]</a> Path operations
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					A <code class="code">java.nio.file.Path</code> object is somewhat analogous to a <code class="code">java.io.File</code> object as it can represent
+					a file or directory on the file system. A <code class="code">Path</code> object is more abstract though, in that it is a sequence of
+					names that represent a directory hierarchy (that may or may not include a file) on the file system. There are no methods
+					in the <code class="code">Path</code> interface that allow working with directories or files. The defined methods are for working
+					with or manipulating <code class="code">Path</code> objects only, resolving one <code class="code">Path</code> to another. (There is one method
+					that can be used to obtain a <code class="code">java.io.File</code> object from a <code class="code">java.nio.file.Path</code>, <code class="code">toFile</code>.
+					Likewise the <code class="code">java.io.File</code> class now contains a <code class="code">toPath</code> method.) To work with files and directories,
+					<code class="code">Path</code> objects are used in conjunction with the <code class="code">java.nio.file.Files</code> class. The <code class="code">java.nio.file.Files</code>
+					class consists entirely of static methods for manipulating directories and files, including copy, move and functions for
+					working with symbolic links.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Implementations of <code class="code">java.nio.file.Path</code> interface are immutable and safe for use by multiple concurrent threads.
+					</p>
+				</td></tr></table></div>
+				<p>
+					In Java 6.0 and earlier you do that:
+					</p><pre class="programlisting">
+File file = new File("README.TXT");
+					</pre><p>
+				</p>
+				<p>
+					Since Java 7.0 you do that:
+					</p><pre class="programlisting">
+// Paths class consists exclusively of static methods that return a Path by
+// converting a path string or URI
+
+Path path = Paths.get("README.TXT");
+					</pre><p>
+				</p>
+				<p>
+					To make the migration to Java 7.0 (or later) easier, the <code class="code">File</code> class has a new method <code class="code">toPath()</code> that allows you
+					to transform <code class="code">File</code> to <code class="code">Path</code>:
+					</p><pre class="programlisting">
+Path path = new File("README.TXT").toPath();
+					</pre><p>
+				</p>
+				<p>
+					Like <code class="code">File</code>, a <code class="code">Path</code> can also refer to a not existing file. That is only file path, NOT the data
+					containing in a file.
+				</p>
+				<p>
+					The following code snippet defines a <code class="code">Path</code> instance and then invoke several methods to obtain information about
+					the path. Assume we have following folders structure on Windows platform:
+					</p><pre class="programlisting">
+C:\home\zaikin\foo
+					</pre><p>
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						NOTE: None of listed below methods requires that the file corresponding to the <code class="code">Path</code> existed. 
+						If the path does not exist physically on the disk, no runtime exception is thrown.  
+					</p>
+				</td></tr></table></div>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Create <code class="code">Path</code>:
+								</p><pre class="programlisting">
+Path path = Paths.get("C:\\home\\zaikin\\foo");
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+String s = path.toString();
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+C:\home\zaikin\foo
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">toString()</code> method returns the string representation of the <code class="code">Path</code>. If the path
+								was created using <code class="code">FileSystems.getDefault().getPath(String)</code> or <code class="code">Paths.get(...)</code> (the latter
+								is a convenience method for <code class="code">getPath</code>), the method performs minor syntactic cleanup. For example, in
+								a UNIX operating system, it will correct the input string <code class="code">//home/zaikin/foo</code> to <code class="code">/home/zaikin/foo</code>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+Path p = path.getFileName()
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+foo
+								</pre><p>
+							</p>
+							<p>
+								 The <code class="code">getFileName()</code> method returns the name of the file or directory denoted by this path as a <code class="code">Path</code> object.
+								 The file name is the farthest element from the root in the directory hierarchy (last element of the sequence of name elements).
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+Path p = path.getName(0)
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+home
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">getName(int index)</code> method returns a name element of this path as a <code class="code">Path</code> object.
+							</p>
+							<p>
+								The <code class="code">index</code> parameter is the index of the name element to return. The element that is closest to the root in
+								the directory hierarchy has index <code class="code">0</code>. The element that is farthest from the root has index <code class="code">count-1</code>.
+							</p>
+							<p>
+								NOTE: if <code class="code">index</code> is negative, <code class="code">index</code> is greater than or equal to the number of elements, or this path has zero name elements,
+								then <code class="code">IllegalArgumentException</code> is thrown.
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+int i = path.getNameCount();
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+3
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">getNameCount()</code> method returns the number of name elements in the path.
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+Path p = path.subpath(0,2);
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+home\zaikin
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">subpath(int beginIndex, int endIndex)</code> method returns a relative <code class="code">Path</code> that is a subsequence
+								of the name elements of this path.
+							</p>
+							<p>
+								The <code class="code">beginIndex</code> and <code class="code">endIndex</code> parameters specify the subsequence of name elements. The name that is
+								closest to the root in the directory hierarchy has index <code class="code">0</code>. The name that is farthest from the root has index
+								<code class="code">count-1</code>. The returned <code class="code">Path</code> object has the name elements that begin at <code class="code">beginIndex</code> and
+								extend to the element at index <code class="code">endIndex-1</code>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+Path p = path.getRoot();
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+C:\
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">getRoot()</code> method returns the root component of this path as a <code class="code">Path</code> object, or <code class="code">null</code> if this
+								path does not have a root component (e.g. for relative paths).
+							</p>
+							<p>
+								For UNIX platform the root will be "<code class="code">/</code>". For Windows, something like "<code class="code">C:\</code>".
+							</p>
+						</li><li class="listitem">
+							<p>
+								</p><pre class="programlisting">
+Path p = path.resolveSibling("bar");
+								</pre><p>
+								returns
+								</p><pre class="programlisting">
+C:\home\zaikin\bar
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">resolveSibling(Path other)</code> and <code class="code">resolveSibling(String other)</code> methods resolve the given path against
+								this path's parent path. This is useful where a file name needs to be replaced with another file name. For example, suppose that
+								the name separator is "/" and a path represents "<code class="code">dir1/dir2/foo</code>", then invoking this method with the <code class="code">Path</code>
+								"<code class="code">bar</code>" will result in the <code class="code">Path</code> "<code class="code">dir1/dir2/bar</code>". If this path does not have a parent path, or
+								<code class="code">other</code> is absolute, then this method returns <code class="code">other</code>. If <code class="code">other</code> is an empty path then this
+								method returns this path's parent, or where this path doesn't have a parent, the empty path.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Removing redundancies from a <code class="code">Path</code></strong></span>
+				</p>
+				<p>
+					Given the following code:
+					</p><pre class="programlisting">
+Path path = Paths.get("C:\\home\\zaikin\\..\\..\\foo");
+Path p = path.normalize();
+System.out.println(path);
+System.out.println(path.getNameCount());
+System.out.println(p);
+System.out.println(p.getNameCount());
+					</pre><p>
+					it prints (NOTE: implementations of <code class="code">Path</code> interface are immutable by design)
+					</p><pre class="programlisting">
+C:\home\zaikin\..\..\foo
+5
+C:\foo
+1
+					</pre><p>
+				</p>
+				<p>
+					The <code class="code">normalize()</code> method returns a path that is this path with redundant name elements eliminated.
+				</p>
+				<p>
+					The precise definition of this method is implementation dependent but in general it derives from this path, a path
+					that does not contain redundant name elements. In many file systems, the "." and ".." are special names used to indicate
+					the current directory and parent directory. In such file systems all occurrences of "." are considered redundant.
+					If a ".." is preceded by a non-".." name then both names are considered redundant (the process to identify such names
+					is repeated until is it no longer applicable).
+				</p>
+				<p>
+					NOTE: This method does not access the file system; the path may not locate a file that exists. Eliminating ".." and a
+					preceding name from a path may result in the path that locates a different file than the original path. This can arise
+					when the preceding name is a symbolic link.
+				</p>
+				<p>
+					<span class="bold"><strong>Creating a path between two paths</strong></span>
+				</p>
+				<p>
+					A common requirement when you are writing file I/O code is the capability to construct a path from one location in the file system to
+					another location. You can meet this using the <code class="code">relativize()</code> method. This method constructs a path originating from the original
+					path and ending at the location specified by the passed-in path. The new path is relative to the original path. Relativization is the inverse of
+					resolution.
+				</p>
+				<p>
+					For example, consider two relative paths:
+					</p><pre class="programlisting">
+Path p1 = Paths.get("home");
+Path p2 = Paths.get("home/zaikin/foo");
+					</pre><p>
+					the folowing code:
+					</p><pre class="programlisting">
+Path p1_p2 = p1.relativize(p2);
+System.out.println(p1_p2);
+
+Path p2_p1 = p2.relativize(p1);
+System.out.println(p2_p1);
+					</pre><p>
+					will produce the following output:
+					</p><pre class="programlisting">
+zaikin\foo
+..\..
+					</pre><p>
+				</p>
+				<p>
+					In this example, the two paths share the same node, <code class="code">home</code>. To navigate from <code class="code">home</code> to <code class="code">foo</code>, you first navigate one level
+					down to <code class="code">zaikin</code> and then one more level down to <code class="code">foo</code>. Navigating from <code class="code">foo</code> to <code class="code">home</code> requires moving up two
+					levels.
+				</p>
+				<p>
+					A relative path CANNOT be constructed if only one of the paths includes a root element. If both paths include a root element, the capability to construct a
+					relative path is system dependent.
+				</p>
+				<p>
+					<span class="bold"><strong>Joining two <code class="code">Path</code>s</strong></span>
+				</p>
+				<p>
+					You can combine paths by using the <code class="code">Path.resolve(Path other)</code> and <code class="code">Path.resolve(String other)</code> methods. You pass in a partial path, which is
+					a path that does not include a root element, and that partial path is appended to the original path.
+				</p>
+				<p>
+					If the <code class="code">other</code> parameter is an absolute path then this method trivially returns <code class="code">other</code>. If <code class="code">other</code> is an empty path then this method
+					trivially returns this path. Otherwise this method considers this path to be a directory and resolves the given path against this path. In the simplest case, the
+					given path does not have a root component, in which case this method joins the given path to this path and returns a resulting path that ends with the given
+					path. Where the given path has a root component then resolution is highly implementation dependent and therefore unspecified.
+				</p>
+				<p>
+					For example, consider the following code snippet:
+					</p><pre class="programlisting">
+Path p3 = Paths.get("C:\\home\\zaikin\\foo");
+System.out.format("%s%n", p3.resolve("bar"));
+					</pre><p>
+					the result is:
+					</p><pre class="programlisting">
+C:\home\zaikin\foo\bar
+					</pre><p>
+				</p>
+				<p>
+					Passing an absolute path to the <code class="code">resolve</code> method returns the passed-in path:
+					</p><pre class="programlisting">
+Path p4 = Paths.get("bar");
+System.out.format("%s%n", p4.resolve("C:\\home\\zaikin\\foo"));
+					</pre><p>
+					the result is:
+					</p><pre class="programlisting">
+C:\home\zaikin\foo
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Factory methods</strong></span>
+				</p>
+				<p>
+					Java 11.0 added two new overloaded <code class="code">static</code> methods to <code class="code">java.nio.file.Path</code> interface to conveniently 
+					create an instance of the interface:
+					</p><pre class="programlisting">
+public static Path of(String first, String... more)
+
+public static Path of(URI uri) 
+					</pre><p>
+				</p>
+				<p>
+					Assuming we have a hierarchy:
+					</p><pre class="programlisting">
+C:\home
+&#9492;&#9472;&#9472;&#9472;zaikin
+    &#9492;&#9472;&#9472;&#9472;foo
+            test.txt
+					</pre><p>
+				</p>
+				<p>
+					Then we can create <code class="code">Path</code> instances as follows:
+					</p><pre class="programlisting">
+Path path = Path.of("C:", "home", "zaikin", "foo", "test.txt");
+System.out.println(path);
+boolean exists = Files.exists(path);
+System.out.println(exists);
+					</pre><p>
+					</p><pre class="programlisting">
+C:\home\zaikin\foo\test.txt
+true
+					</pre><p>  
+				</p>
+				<p>
+					</p><pre class="programlisting">
+ URI uri = URI.create("file:///C:/home/zaikin/bar/test.txt"); // does NOT exist !
+ System.out.println(uri);
+ Path path = Path.of(uri);
+ System.out.println(path);
+ System.out.println(Files.exists(path));
+					</pre><p>
+					</p><pre class="programlisting">
+file:///C:/home/zaikin/bar/test.txt
+C:\home\zaikin\bar\test.txt
+false
+					</pre><p>
+					</p><div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+						<p>
+							Most of the <code class="code">Path</code> interface methods (including <code class="code">of(...)</code>) do not throw exception when 
+							the file does not exist.						
+						</p>
+					</td></tr></table></div><p>
+				</p>
+			</div>
+			
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s06.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch05s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.6.&nbsp;
+					Use <code class="code">Collectors</code> with streams, including the <code class="code">groupingBy</code> and <code class="code">partitioningBy</code> operation
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;5.2.&nbsp;
+					 Use <code class="code">Files</code> class to check, delete, copy or move a file or directory
+				</td></tr></table></div></body></html>

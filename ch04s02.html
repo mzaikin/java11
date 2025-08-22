@@ -1,0 +1,240 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>4.2.&nbsp; Search stream data using search findFirst, findAny, anyMatch, allMatch and noneMatch methods</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"><link rel="prev" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"><link rel="next" href="ch04s03.html" title="4.3.&nbsp; Use the Optional class"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.2.&nbsp;
+					Search stream data using search <code class="code">findFirst</code>, <code class="code">findAny</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code> and 
+					<code class="code">noneMatch</code> methods
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch04s03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c4s2"></a>4.2.&nbsp;
+					Search stream data using search <code class="code">findFirst</code>, <code class="code">findAny</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code> and 
+					<code class="code">noneMatch</code> methods
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8. Streams.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Java stream order of processing</strong></span>
+				</p>
+				<p>
+					Streams may or may not have a defined <span class="bold"><strong>encounter order</strong></span>. Whether or not a stream 
+					has an encounter order depends on the source and the intermediate operations. Certain stream sources (such as 
+					<code class="code">java.util.List</code> or arrays) are intrinsically ordered, whereas others (such as <code class="code">java.util.HashSet</code>) 
+					are not. Some intermediate operations, such as <code class="code">sorted()</code>, may impose an encounter order on an otherwise 
+					unordered stream, and others may render an ordered stream unordered, such as <code class="code">BaseStream.unordered()</code>. 
+					Further, some terminal operations may ignore encounter order, such as <code class="code">forEach()</code>.
+				</p>
+				<p>
+					If a stream is ordered, most operations are constrained to operate on the elements in their encounter 
+					order; if the source of a stream is a <code class="code">List</code> containing <code class="code">[1, 2, 3]</code>, then the result of 
+					executing <code class="code">map(x -&gt; x*2)</code> must be <code class="code">[2, 4, 6]</code>.
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; ints = List.of(1, 2, 3);
+Stream&lt;Integer&gt; str = ints.stream();
+Spliterator&lt;Integer&gt; spl = str.spliterator();
+System.out.print(spl.hasCharacteristics(Spliterator.ORDERED));
+
+
+					</pre><p>
+					</p><pre class="programlisting">
+true
+					</pre><p>
+					However, if the source has no defined encounter order, then any permutation of the 
+					values <code class="code">[2, 4, 6]</code> would be a valid result.
+					</p><pre class="programlisting">
+
+HashSet&lt;Integer&gt; ints = new HashSet&lt;&gt;();
+ints.add(1); ints.add(2); ints.add(3);
+Stream&lt;Integer&gt; str = ints.stream();
+Spliterator&lt;Integer&gt; spl = str.spliterator();
+System.out.print(spl.hasCharacteristics(Spliterator.ORDERED));
+
+					</pre><p>
+					</p><pre class="programlisting">
+false					
+					</pre><p>
+				</p>
+				<p>
+					For sequential streams, the presence or absence of an encounter order does not affect performance, only 
+					determinism. If a stream is ordered, repeated execution of identical stream pipelines on an identical source 
+					will produce an identical result; if it is not ordered, repeated execution might produce different results.
+				</p>
+				<p>
+					For parallel streams, relaxing the ordering constraint can sometimes enable more efficient execution			
+				</p>
+				<p>
+					<span class="bold"><strong>Finding the first element - <code class="code">findFirst()</code></strong></span>
+				</p>
+				<p>
+					For ordered streams you may wish to find the first element. There is the <code class="code">findFirst()</code> method for this:
+					</p><pre class="programlisting">
+
+Optional&lt;T&gt; findFirst();
+
+					</pre><p>
+					For example, given a list of integers, finds the first number that is divisible by <code class="code">7</code>:
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; ints = List.of(1, 6, 22, 21, 35, 36);
+Optional&lt;Integer&gt; result = ints.stream().filter(i -&gt; i % 7 == 0).findFirst();
+result.ifPresentOrElse(System.out::print, () -&gt; System.out.print("No results found"));
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Finding an element - <code class="code">findAny()</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">findAny()</code> method returns an arbitrary element of the current stream.
+					</p><pre class="programlisting">
+
+Optional&lt;T&gt; findAny();
+
+					</pre><p>
+					It can be used in conjunction with other stream operations. For example, you may wish to find any manager
+					from employee list. You can combine the <code class="code">filter(...)</code> method and <code class="code">findAny</code>
+					to express this query:
+					</p><pre class="programlisting">
+public class Employee {
+    public static final int MANAGER=100;
+    public int type;
+    public String name;
+
+    public Employee(int t, String n) {
+        type = t;
+        name = n;
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee(100, "John"), new Employee(100, "Jane"), new Employee(99, "Deb"));
+Optional&lt;Employee&gt; mgr = emps.filter(a -&gt; a.type == Employee.MANAGER).findAny();
+System.out.print(mgr.get().name);
+
+					</pre><p>
+					The stream pipeline will be optimized behind the scenes to perform a single pass and finish as
+					soon as a result is found by using short-circuiting.
+				</p>
+				<p>
+					You may wonder why Java 8.0 introduced both <code class="code">findFirst()</code> and <code class="code">findAny()</code>. The reason behind
+					<code class="code">findAny()</code> is to give a more flexible alternative to <code class="code">findFirst()</code>. If you are
+					not interested in getting a specific element, this gives the implementing stream more flexibility in case
+					it is a parallel stream.
+				</p>
+				<p>
+					<span class="bold"><strong>No effort will be made to randomize the element returned</strong></span>, it just does
+					not give the same guarantees as <code class="code">findFirst()</code>, and might therefore be faster.
+				</p>
+				<p>
+				    The behavior of <code class="code">findAny()</code> operation is explicitly nondeterministic; it is free to select
+				    any element in the stream. This is to allow for maximal performance in parallel operations; the cost
+				    is that multiple invocations on the same source may not return the same result. If a stable result is
+				    desired, use <code class="code">findFirst()</code> instead.
+				</p>
+				<p>
+					<span class="bold"><strong>Checking to see if a predicate matches at least one element - <code class="code">anyMatch(...)</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">anyMatch(...)</code> method can be used to answer the question "Is there an element in the stream
+					matching the given predicate?" It accepts <code class="code">Predicate</code> as parameter:
+					</p><pre class="programlisting">
+
+boolean anyMatch(Predicate&lt;? super T&gt; predicate);
+
+					</pre><p>
+				</p>
+				<p>
+					For example, you can use it to find out whether company has an employee with name "<code class="code">Mikalai</code>":
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee(100, "Minerva"), new Employee(100, "Mikalai"), new Employee(99, "Michael"));
+boolean b = emps.anyMatch(e -&gt; "Mikalai".equalsIgnoreCase(e.name));
+if (b) {
+    System.out.print("There is an employee with name 'Mikalai'");
+}
+
+					</pre><p>
+					The <code class="code">anyMatch(...)</code> method returns a <code class="code">boolean</code> and is therefore a terminal operation.
+				</p>
+				<p>
+					<span class="bold"><strong>Checking to see if a predicate matches all elements - <code class="code">allMatch(...)</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">allMatch(...)</code> method works similarly to <code class="code">anyMatch(...)</code> but will check to see
+					if all the elements of the stream match the given predicate:
+					</p><pre class="programlisting">
+
+boolean allMatch(Predicate&lt;? super T&gt; predicate);
+
+					</pre><p>
+					For example, you can use it to find out
+					whether all employee names start with "<code class="code">Mi</code>":
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee(100, "Minerva"), new Employee(100, "Mikalai"), new Employee(99, "Michael"));
+boolean b = emps.allMatch(e -&gt; e.name.startsWith("Mi"));
+if (b) {
+    System.out.println("All employee names start with 'Mi'");
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Checking to see if a predicate does not match any element - <code class="code">noneMatch(...)</code></strong></span>
+				</p>
+				<p>
+					The opposite of <code class="code">allMatch(...)</code> is <code class="code">noneMatch(...)</code>. It ensures that no elements in the
+					stream match the given predicate:
+					</p><pre class="programlisting">
+
+boolean noneMatch(Predicate&lt;? super T&gt; predicate);
+
+					</pre><p>
+					For example, you can use it to find out whether company has an employee with
+					name "<code class="code">Gandalf</code>":
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee(100, "Minerva"), new Employee(100, "Mikalai"), new Employee(99, "Michael"));
+boolean b = emps.noneMatch(e -&gt; e.name.equals("Gandalf"));
+if (b) {
+    System.out.print("Gandalf is employed by some other company !");
+}
+
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Remember method signatures:
+					</p>
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								All <code class="code">findXxx()</code> methods have no arguments and return <code class="code">Optional</code>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								All <code class="code">xxxMatch(...)</code> methods accept a <code class="code">Predicate</code> and return a <code class="code">boolean</code> primitive.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Some operations do not need to process the whole stream to produce a result. For example,
+						you need to evaluate a large boolean expression chained with "<code class="code">&amp;&amp;</code>" operators. You need only find
+						out that one expression is <code class="code">false</code> to deduce that the whole expression will return
+						<code class="code">false</code>, no matter how long the expression is; there is no need to evaluate the
+						entire expression. This is what short-circuiting refers to.
+					</p>
+					<p>
+						In relation to streams, operations <code class="code">anyMatch(...)</code>, <code class="code">allMatch(...)</code>,
+						<code class="code">noneMatch(...)</code>, <code class="code">findFirst()</code>, and <code class="code">findAny()</code>
+						do not need to process the whole stream to produce a result. As soon as an element is found, a
+						result can be produced. These are <span class="bold"><strong>short-circuiting terminal operations</strong></span>.
+					</p>
+				</td></tr></table></div>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch04s03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;4.3.&nbsp;
+					 Use the <code class="code">Optional</code> class
+				</td></tr></table></div></body></html>

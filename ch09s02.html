@@ -1,0 +1,126 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>9.2.&nbsp; Implement decomposition and reduction with streams</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch09.html" title="Chapter&nbsp;9.&nbsp;Parallel Streams"><link rel="prev" href="ch09.html" title="Chapter&nbsp;9.&nbsp;Parallel Streams"><link rel="next" href="ch10.html" title="Chapter&nbsp;10.&nbsp;Language Enhancements"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">9.2.&nbsp;
+					Implement decomposition and reduction with streams
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch09.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;9.&nbsp;Parallel Streams</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch10.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c9s2"></a>9.2.&nbsp;
+					Implement decomposition and reduction with streams
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8. Section 12. Reduction Operations.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Reduction</strong></span>
+				</p>
+				<p>
+					The <code class="code">reduce(T identity, BinaryOperator&lt;T&gt; accumulator)</code> method of the <code class="code">Stream</code> interface
+					performs a reduction operation on the stream to reduce the stream to a single value. It takes an initial value and
+					an accumulator that is a <code class="code">BinaryOperator&lt;T&gt;</code> as arguments. The first time, the accumulator receives
+					the initial value and the first element of the stream as arguments, and returns a value. The second time, the
+					accumulator receives the value returned from its previous call and the second element from the stream. This process
+					continues until all elements of the stream have been passed to the accumulator.
+				</p>
+				<p>
+					The returned value from the last call of the accumulator is returned from the <code class="code">reduce(...)</code> method. The
+					following snippet of code performs the summation of all integers in the stream:
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+Integer sum = numbers.stream().reduce(0, (n1, n2) -&gt; n1 + n2); // must be 36
+System.out.print("Sum of all integers in the stream : " + sum);
+
+					</pre><p>
+					The <code class="code">Integer</code> class contains a static <code class="code">sum(...)</code> method to perform sum of two integers. You can
+					rewrite the code using a method reference, like so:
+					</p><pre class="programlisting">
+Integer sum = numbers.stream().reduce(0, Integer::sum);
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Reduction operations</strong></span>
+				</p>
+				<p>
+					A <span class="bold"><strong>reduction operation</strong></span> (also called a <span class="bold"><strong>fold</strong></span>) takes 
+					a sequence of input elements and combines them into a single summary result by repeated application of a combining 
+					operation, such as finding the sum or maximum of a set of numbers, or accumulating elements into a list. The 
+					streams classes have multiple forms of general reduction operations, called <code class="code">reduce()</code> and <code class="code">collect()</code>, 
+					as well as multiple specialized reduction forms such as <code class="code">sum()</code>, <code class="code">max()</code>, or <code class="code">count()</code>.
+				</p>
+				<p>
+					Of course, such operations can be readily implemented as simple sequential loops, as in:
+					</p><pre class="programlisting">
+int sum = 0;
+for (int x : numbers) {
+    sum += x;
+}
+					</pre><p>
+					However, there are good reasons to prefer a reduce operation over a mutative accumulation such as the above. Not only 
+					is a reduction "more abstract" -- it operates on the stream as a whole rather than individual elements -- but a 
+					properly constructed reduce operation is inherently parallelizable, so long as the function(s) used to process 
+					the elements are associative and stateless. For example, given a stream of numbers for which we want to find 
+					the sum, we can write:
+					</p><pre class="programlisting">
+int sum = numbers.stream().reduce(0, (x, y) -&gt; x + y);
+					</pre><p>
+					or:
+					</p><pre class="programlisting">
+int sum = numbers.stream().reduce(0, Integer::sum);
+					</pre><p>
+					These reduction operations can run safely in parallel with almost no modification:
+					</p><pre class="programlisting">
+int sum = numbers.parallelStream().reduce(0, Integer::sum);
+					</pre><p>
+				</p>
+				<p>
+					Reduction parallellizes well because the implementation can operate on subsets of the data in parallel, and then combine 
+					the intermediate results to get the final correct answer. (Even if the language had a "parallel for-each" construct, 
+					the mutative accumulation approach would still required the developer to provide thread-safe updates to the shared 
+					accumulating variable sum, and the required synchronization would then likely eliminate any performance gain from parallelism.) 
+					Using <code class="code">reduce()</code> instead removes all of the burden of parallelizing the reduction operation, and the library 
+					can provide an efficient parallel implementation with no additional synchronization required.
+				</p>
+				<p>
+					In its more general form, a reduce operation on elements of type &lt;T&gt; yielding a result of type &lt;U&gt; requires 
+					three parameters:
+					</p><pre class="programlisting">
+
+ &lt;U&gt; U reduce(U identity,
+     BiFunction&lt;U, ? super T, U&gt; accumulator,
+     BinaryOperator&lt;U&gt; combiner);
+					
+					</pre><p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								The <span class="emphasis"><em>identity</em></span> element is both an initial seed value for the reduction and a default result if 
+								there are no input elements.
+							</p>
+						</li><li class="listitem">
+							<p>
+								The <span class="emphasis"><em>accumulator</em></span> function takes a partial result and the next element, 
+								and produces a new partial result.
+							</p>
+						</li><li class="listitem">
+							<p>
+								The <span class="emphasis"><em>combiner</em></span> function combines two partial results to produce 
+								a new partial result. (The combiner is necessary in parallel reductions, where the input is partitioned, a partial 
+								accumulation computed for each partition, and then the partial results are combined to produce a final result.)
+							</p>
+						</li></ul></div><p>					
+				</p>
+				<p>
+					The code to sum all the integers in a stream can be rewritten as follows:
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; numbers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+Integer sum = numbers.stream().reduce(0, 
+    (res, i) -&gt; res + i,                  // adds one element's value to partial result
+    (part1, part2) -&gt; part1 + part2);     // combine two partial results
+System.out.print("Sum of all integers in the stream : " + sum);
+
+					</pre><p>					 
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch09.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch10.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;9.&nbsp;Parallel Streams&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;10.&nbsp;Language Enhancements</td></tr></table></div></body></html>

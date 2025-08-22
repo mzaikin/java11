@@ -1,0 +1,438 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;8.&nbsp;Lambda Expressions</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch07s02.html" title="7.2.&nbsp; Create and use lambda expressions with local-variable type inferred parameters"><link rel="next" href="ch08s02.html" title="8.2.&nbsp; Use lambda expressions and method references"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;8.&nbsp;Lambda Expressions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch08s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap8"></a>Chapter&nbsp;8.&nbsp;Lambda Expressions</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c8s1"></a>8.1.&nbsp;
+					 Create and use lambda expressions
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 3, Section 4. Lambda Expressions
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Replacing Anonymous Inner Classes with Lambda Expressions</strong></span>
+				</p>
+				<p>
+					Portions of your code contain anonymous inner classes, which are sometimes difficult to follow. You would like to
+					replace anonymous inner classes with code that is easier to read and maintain.
+				</p>
+				<p>
+					Replace the anonymous inner classes with lambda expressions. By doing so, development time will be much faster as
+					there will be fewer lines of boilerplate code required. A typical Java Swing application utilizes anonymous inner
+					classes to add functionality to application constructs. For instance, anonymous classes are a great way to add
+					an action to a button. The problem is that inner classes can be difficult to follow, and they contain lots of
+					boilerplate code.
+				</p>
+				<p>
+					The following lines of code demonstrate a typical anonymous inner class implementation for a button action
+					implementation. Let's look at these lines of code before taking a look at how you can achieve the same solution using
+					a lambda expression.
+					</p><pre class="programlisting">
+JButton button = ...
+JLabel comp = ...
+
+button.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        comp.setText("Button has been clicked");
+    }
+});
+					</pre><p>
+					In this example, we are creating a new object that provides an implementation of the
+					<code class="code">ActionListener</code> interface. This interface has a single method, <code class="code">actionPerformed</code>, which is
+					called by the <code class="code">button</code> instance when a user actually clicks the on-screen button. The
+					anonymous inner class provides the implementation of this method.
+				</p>
+				<p>
+					Anonymous inner classes were designed to make it easier for Java programmers to pass
+					around code as data. Unfortunately, they do not make it easy enough. There are still four
+					lines of boilerplate code required in order to call the single line of important logic.
+				</p>
+				<p>
+					Boilerplate is not the only issue, though: this code is fairly hard to read because it obscures
+					the programmer's intent. We do not want to pass in an object; what we really want to do
+					is pass in some behavior. In Java 8, we would write this code example as a lambda
+					expression, as shown in example below:
+					</p><pre class="programlisting">
+JButton button = ...
+JLabel comp = ...
+
+button.addActionListener(e -&gt; comp.setText("Button has been clicked"));
+					</pre><p>
+				</p>
+				<p>
+					Instead of passing in an object that implements an interface, we are passing in a block of
+					code - a function without a name.
+				</p>
+				<p>
+					The '<code class="code">e</code>' is the name of a parameter (it can be any valid Java identifier), like the parameter
+					in the anonymous inner class example.
+				</p>
+				<p>
+					The '<code class="code">-&gt;</code>' separates the parameter from the body of the lambda expression, which is just
+					some code that is run when a user clicks the button.
+				</p>
+				<p>
+					Another difference between this example and the anonymous inner class is how we declare the variable
+					<code class="code">e</code>. Previously, we needed to explicitly provide its type - <code class="code">ActionEvent e</code>.
+					In this example, we have not provided the type at all, yet this example still compiles. What is
+					happening under the hood is that Java compiler is <span class="bold"><strong>inferring the
+					type of the variable <code class="code">e</code> from its context</strong></span> - here, from the signature
+					of <code class="code">addActionListener</code>. It means that you do not need to explicitly write
+					out the type when it is obvious.
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						In some situations where the Java compiler cannot infer types, you MUST
+						explicitly specify values for type variables with type witnesses.
+					</p>
+				</td></tr></table></div>
+				<p>
+					Example below demonstrates explicit type declaration (optional for this particular example) of
+					lambda method parameter:
+					</p><pre class="programlisting">
+JButton button = ...
+JLabel comp = ...
+
+button.addActionListener((ActionEvent e) -&gt; comp.setText("Button has been clicked"));
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Syntax of Lambda Expressions</strong></span>
+				</p>
+				<p>
+					A lambda expression consists of the following:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								A comma-separated list of formal parameters enclosed in parentheses.
+							</p>
+							<p>
+								Note: You can omit the data type of the parameters in a lambda expression. In addition, you
+								can omit the parentheses if there is only one parameter. For example, the following lambda expressions are
+								valid:
+								</p><pre class="programlisting">
+s -&gt; s.getAge() &gt;= 18
+								</pre><p>
+								</p><pre class="programlisting">
+(Student s) -&gt; s.getAge() &gt;= 18
+								</pre><p>
+								</p><pre class="programlisting">
+(s) -&gt; s.getAge() &gt;= 18
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								The arrow token <code class="code">-&gt;</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								A body, which consists of a <span class="bold"><strong>single expression</strong></span> or a
+								<span class="bold"><strong>statement block</strong></span>. This example uses the	following expression:
+								</p><pre class="programlisting">
+... -&gt; s.getAge() &gt;= 18
+								</pre><p>
+								If you specify a single expression, then the Java runtime evaluates the expression and
+								then returns its value. Alternatively, you can use a <code class="code">return</code> statement:
+								</p><pre class="programlisting">
+... -&gt; { return s.getAge() &gt;= 18; }
+								</pre><p>
+							</p>
+							<p>
+								A <code class="code">return</code> statement is NOT an expression; in a lambda expression, you MUST enclose
+								statements in braces (<code class="code">{...}</code>). However, you do not have to enclose a <code class="code">void</code>
+								method invocation in braces. For example, the following is a valid lambda expression:
+								</p><pre class="programlisting">
+email -&gt; System.out.println(email)
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong><code class="code">java.util.function</code> package summary</strong></span>
+				</p>
+				<p>
+					There are a lot of re-usable functional requirements that can be captured by functional interfaces and lambdas.
+					The designers of Java 8.0 have captured the common use cases and created a library of functions for them. A
+					new package called <code class="code">java.util.function</code> was created to host these common functions.
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Listings of the interfaces provided in this section are not complete. The listings only show
+						the most important parts of the source code - signatures of the functional methods.
+					</p>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>java.util.function.Predicate</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">boolean</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a predicate (boolean-valued function) of one argument.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface Predicate&lt;T extends Object&gt; {
+
+    public boolean test(T t);
+
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.Consumer</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">void</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents an operation that accepts a single input argument and returns no result.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface Consumer&lt;T extends Object&gt; {
+
+    public void accept(T t);
+
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.Function</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">R</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a function that accepts one argument and produces a result.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface Function&lt;T extends Object, R extends Object&gt; {
+
+    public R apply(T t);
+
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.Supplier</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: None
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a supplier of results. There is no requirement that a new or
+								distinct result be returned each time the supplier is invoked.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface Supplier&lt;T extends Object&gt; {
+
+    public T get();
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.ToDoubleFunction</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">double</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a function that produces a double-valued result. This is
+								the double-producing primitive specialization for <code class="code">Function</code>.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface ToDoubleFunction&lt;T extends Object&gt; {
+
+    public double applyAsDouble(T t);
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.DoubleFunction</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter type: <code class="code">double</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">R</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a function that accepts a double-valued argument and produces a
+								result. This is the double-consuming primitive specialization for <code class="code">Function</code>.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface DoubleFunction&lt;R extends Object&gt; {
+
+    public R apply(double d);
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.BiPredicate</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter types: <code class="code">T</code>, <code class="code">U</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">boolean</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents a predicate (boolean-valued function) of two arguments. This
+								is the two-arity specialization of <code class="code">Predicate</code>.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface BiPredicate&lt;T extends Object, U extends Object&gt; {
+
+    public boolean test(T t, U u);
+
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>java.util.function.UnaryOperator</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Parameter types: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Return type: <code class="code">T</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Description: Represents an operation on a single operand that produces a result
+								of the same type as its operand. This is a specialization of
+								<code class="code">Function</code> for the case where the operand and result are of the same type.
+							</p>
+							<p>
+								NOTE: Since it extends <code class="code">Function</code>, it inherits Single Abstract Method -
+								<code class="code">Function.apply(Object);</code>, or more accurate <code class="code">T apply(T t);</code>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+package java.util.function;
+
+@FunctionalInterface
+public interface UnaryOperator&lt;T extends Object&gt; extends Function&lt;T, T&gt; {
+
+}
+
+					</pre><p>
+				</p>
+								
+			</div>
+			
+			
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch08s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">7.2.&nbsp;
+					Create and use lambda expressions with local-variable type inferred parameters
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;8.2.&nbsp;
+					Use lambda expressions and method references
+				</td></tr></table></div></body></html>

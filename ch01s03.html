@@ -1,0 +1,477 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>1.3.&nbsp; Describe how a modular project is compiled and run</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch01.html" title="Chapter&nbsp;1.&nbsp;Understanding Modules"><link rel="prev" href="ch01s02.html" title="1.2.&nbsp; Declare modules and enable access between modules"><link rel="next" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Services in a Modular Application"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">1.3.&nbsp;
+					   Describe how a modular project is compiled and run
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;1.&nbsp;Understanding Modules</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c1s3"></a>1.3.&nbsp;
+					   Describe how a modular project is compiled and run
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 15.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Unnamed module</strong></span>
+				</p>
+				<p>
+					From Java 9 and forward, all Java classes must be located in a module for the Java VM to use them. But in Java 9 (and Java 11 too) you can still use the <code class="code">-classpath</code> (synonyms:
+					<code class="code">-cp</code> and <code class="code">--class-path</code>) argument to the Java VM when running an application. On the classpath you can include all your older Java classes, just like you have 
+					done before Java 9. All classes found on the classpath will be included in what Java calls the <span class="bold"><strong>unnamed module</strong></span>.
+				</p>
+				<p>
+					The unnamed module <code class="code">exports</code> all its packages. However, the classes in the unnamed module are only readable by other classes in the unnamed module. No named module can read the 
+					classes of the unnamed module.
+				</p>
+				<p>
+					If a package is exported by a named module, but also found in the unnamed module, the package from the named module will be used.
+				</p>
+				<p>
+					The unnamed module <code class="code">opens</code> all its packages. However, the classes in the unnamed module are only accessible via Reflection API by other classes in the unnamed module. 
+					No named module can access via Reflection API the classes of the unnamed module.
+				</p>
+				<p>
+					All classes in the unnamed module <code class="code">requires</code> all modules found on the module path. All classes in the unnamed module can read all classes exported by all 
+					the Java modules found on the module path.
+				</p>
+				<p>
+					Let's check scenario when named module code depends on unnamed module code. Create non-modular <code class="code">greeter.jar</code> with the <code class="code">p1.Greeter</code> class:
+					</p><pre class="programlisting">
+package p1;
+
+public class Greeter {
+    public static void greet() {
+        System.out.println("Greeting from Java 8 !");
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\LIB
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p1
+        Greeter.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\lib&gt;javac p1/Greeter.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\lib&gt;jar cvf greeter.jar p1
+added manifest
+adding: p1/(in = 0) (out= 0)(stored 0%)
+adding: p1/Greeter.class(in = 409) (out= 288)(deflated 29%)
+adding: p1/Greeter.java(in = 138) (out= 113)(deflated 18%)
+					</pre><p>
+				</p>
+				<p>
+					Now create named module for client:
+					</p><pre class="programlisting">
+package p2;
+
+import p1.Greeter;
+
+public class Client {
+    public static void main(String[] args) {
+        Greeter.greet();
+    }
+}
+					</pre><p>
+					with module definition:
+					</p><pre class="programlisting">
+module MOD { }
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\MOD3
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p2
+        Client.java
+					</pre><p>
+				</p>
+				<p>
+					Try to compile:
+					</p><pre class="programlisting">
+C:\1Z0-817\mod3&gt;javac -cp ../lib/greeter.jar module-info.java p2/Client.java
+p2\Client.java:3: error: package p1 is not visible
+import p1.Greeter;
+       ^
+  (package p1 is declared in the unnamed module, but module p1 does not read it)
+1 error
+					</pre><p>
+					As you can see, named module <code class="code">MOD</code> cannot access at compile (and runtime) time class from unnamed module added via <code class="code">-cp</code> option.
+				</p>
+				<p>
+					Now, try the opposite scenario: accessing named module (<code class="code">Greeter</code>) from unnamed module (<code class="code">Client</code>).					 				
+				</p>
+				<p>
+					Create modular JAR first:
+					</p><pre class="programlisting">
+package p1;
+
+public class Greeter {
+    public static void greet() {
+        System.out.println("Greeting from Java 9 !");
+    }
+}
+
+					</pre><p>
+					<code class="code">module-info.java</code>:
+					</p><pre class="programlisting">
+module MOD { 
+	exports p1;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\mod4&gt;javac module-info.java p1/Greeter.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\MOD4
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p1
+        Greeter.class
+        Greeter.java
+					</pre><p>
+					Create a modular JAR:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file greeter.jar -C mod4 .
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar -tvf greeter.jar
+     0 Fri Mar 29 23:16:54 AST 2019 META-INF/
+    66 Fri Mar 29 23:16:54 AST 2019 META-INF/MANIFEST.MF
+   186 Fri Mar 29 23:16:54 AST 2019 module-info.class
+    14 Fri Mar 29 23:13:04 AST 2019 module-info.java
+     0 Fri Mar 29 23:14:20 AST 2019 p1/
+   409 Fri Mar 29 23:14:20 AST 2019 p1/Greeter.class
+   138 Fri Mar 29 23:13:20 AST 2019 p1/Greeter.java
+					</pre><p>
+				</p>
+				<p>
+					Now, create unnamed client module:
+					</p><pre class="programlisting">
+package p2;
+
+import p1.Greeter;
+
+public class Client {
+    public static void main(String[] args) {
+        Greeter.greet();
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\LIB1
+&#9492;&#9472;&#9472;&#9472;p2
+        Client.java
+					</pre><p>
+					Compile:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac -cp greeter.jar lib1/p2/Client.java
+					</pre><p>
+					Create non-modular executable JAR file:
+					</p><pre class="programlisting">
+jar --create --file client.jar --main-class p2.Client -C lib1 .
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar -tvf client.jar
+     0 Fri Mar 29 23:30:54 AST 2019 META-INF/
+    89 Fri Mar 29 23:30:54 AST 2019 META-INF/MANIFEST.MF
+     0 Fri Mar 29 23:30:24 AST 2019 p2/
+   301 Fri Mar 29 23:30:24 AST 2019 p2/Client.class
+   140 Fri Mar 29 22:48:34 AST 2019 p2/Client.java
+					</pre><p>
+					Run the client:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;java -p greeter.jar --add-modules MOD -jar client.jar
+Greeting from Java 9 !
+					</pre><p>
+					This demonstrated unnamed module access to named module.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						When you are trying to launch an application from a non-modular JAR so you have to explicitly resolve required 
+						modules by <code class="code">--add-modules</code>
+					</p>
+					<p>
+						The required named modules have to be on module graph, e.g. add by <code class="code">--module-path</code> (or by <code class="code">-p</code>) 						
+					</p>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Automatic modules</strong></span>
+				</p>
+				<p>
+					Automatic modules are named modules which are automatically created from a non-modular JARs. It happens when the JAR is placed on the <span class="bold"><strong>module path</strong></span> 
+					(as dependency) of a modular application via <code class="code">--module-path</code> or <code class="code">-p</code> options.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						A JAR file that does not have a <code class="code">module-info.class</code> in its top-level directory is a non-modular JAR. 						
+					</p>
+				</td></tr></table></div>
+				<p>
+					A non-modular JAR becomes modular (automatic module) JAR when used by a modular application via <code class="code">--module-path</code> option (and becomes part of the unnamed module when 
+					used by a modular application via <code class="code">--class-path</code> option).
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Automatic module <code class="code">exports</code> all its packages.
+					</p>
+					<p>
+						Automatic module <code class="code">requires</code> all other modules on the module path. 		
+					</p>
+				</td></tr></table></div>
+				<p>
+					Let's create non-modular JAR:
+					</p><pre class="programlisting">
+package p1;
+
+public class Greeter {
+    public static void greet() {
+        System.out.println("Greeting from automatic module !");
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\LIB2
+&#9492;&#9472;&#9472;&#9472;p1
+        Greeter.java
+					</pre><p>
+					Compile:
+					</p><pre class="programlisting">
+C:\1Z0-817\lib2&gt;javac p1/Greeter.java
+					</pre><p>
+					Create JAR:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file greeter-lib.jar -C lib2 .
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						<code class="code">--file greeter-lib.jar</code> and <code class="code">--file=greeter-lib.jar</code> are both valid syntaxes.
+					</p>
+				</td></tr></table></div>
+				<p>
+					Get description of the new automatic module:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --file greeter-lib.jar --describe-module
+No module descriptor found. Derived automatic module.
+
+greeter.lib automatic
+requires java.base mandated
+contains p1
+					</pre><p>
+				</p>
+				<p>
+					Create new module application in <code class="code">mod5</code> directory:
+					</p><pre class="programlisting">
+package p2;
+
+import p1.Greeter;
+
+public class Client {
+    public static void main(String[] args) {
+        Greeter.greet();
+    }
+}
+					</pre><p>
+					As you saw above, the automatic module name will be <code class="code">greeter.lib</code> and client application <code class="code">requires</code> it:
+					</p><pre class="programlisting">
+module MOD { 
+    requires greeter.lib;
+}
+					</pre><p>
+					Compile:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac -p greeter-lib.jar mod5/module-info.java mod5/p2/Client.java
+					</pre><p> 
+					</p><pre class="programlisting">
+C:\1Z0-817\MOD5
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p2
+        Client.class
+        Client.java
+					</pre><p>
+					Run:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;java -p greeter-lib.jar;mod5 -m MOD/p2.Client
+Greeting from automatic module !
+					</pre><p>
+					Optionally create module JAR and check dependencies:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file client-mod.jar -C mod5 .
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --file client-mod.jar --describe-module
+MOD jar:file:///C:/1Z0-817/client-mod.jar/!module-info.class
+requires greeter.lib
+requires java.base mandated
+contains p2
+					</pre><p>
+				</p>
+				<p>
+					Optionally check dependencies of the modular client:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --module-path client-mod.jar;greeter-lib.jar -s --module MOD
+MOD -&gt; greeter.lib
+MOD -&gt; java.base
+					</pre><p>				
+				</p>
+				<p>
+					<span class="bold"><strong>Automatic module name derivation</strong></span>
+				</p>
+				<p>
+					If the JAR file has the attribute "<code class="code">Automatic-Module-Name</code>" in its main manifest (<code class="code">META-INF/MANIFEST.MF</code>) then its value is the module 
+					name. The module name is otherwise derived from the name of the JAR file.
+				</p>
+				<p>
+					The version, and the module name when the attribute "<code class="code">Automatic-Module-Name</code>" is not present, are derived from the file name of the JAR file as follows:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								The "<code class="code">.jar</code>" suffix is removed.
+							</p>
+						</li><li class="listitem">
+							<p>
+								If the name matches the regular expression "<code class="code">-(\\d+(\\.|$))</code>" then the module name will be derived from the subsequence 
+								preceding the hyphen of the first occurrence. The subsequence after the hyphen is parsed as a <code class="code">Version</code> and ignored if it 
+								cannot be parsed as a <code class="code">Version</code>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								All non-alphanumeric characters (<code class="code">[^A-Za-z0-9]</code>) in the module name are replaced with a dot ("."), all repeating dots are 
+								replaced with one dot, and all leading and trailing dots are removed.							
+							</p>
+						</li><li class="listitem">
+							<p>
+								As an example, a JAR file named "<code class="code">foo-bar.jar</code>" will derive a module name "<code class="code">foo.bar</code>" and no version. A JAR file named 
+								"<code class="code">foo-bar-1.2.3-SNAPSHOT.jar</code>" will derive a module name "<code class="code">foo.bar</code>" and "<code class="code">1.2.3-SNAPSHOT</code>" as the version
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					The set of packages in the module is derived from the non-directory entries in the JAR file that have names ending in "<code class="code">.class</code>". A candidate 
+					package name is derived from the name using the characters up to, but not including, the last forward slash. All remaining forward slashes are replaced 
+					with dot ("."). If the resulting string is a legal package name then it is assumed to be a package name. For example, if the JAR file contains 
+					the entry "<code class="code">p/q/Foo.class</code>" then the package name derived is "<code class="code">p.q</code>".
+				</p>
+				<p>
+					The contents of entries starting with <code class="code">META-INF/services/</code> are assumed to be service configuration files. If the name of a file (that follows 
+					<code class="code">META-INF/services/</code>) is a legal class name then it is assumed to be the fully-qualified class name of a service type. The entries in 
+					the file are assumed to be the fully-qualified class names of provider classes.
+				</p>
+				<p>
+					If the JAR file has a <code class="code">Main-Class</code> attribute in its main manifest, its value is a legal class name, and its package is in the set of 
+					packages derived for the module, then the value is the module main class.
+				</p>
+				<p>
+					<span class="bold"><strong>Java command line options for modules</strong></span>				
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">--module-path</code> (<code class="code">-p</code>)
+							</p>
+							<p>
+								Specifies the module path. We need to provide one or more directories that will contain modules.  Also can contain JAR files.
+								</p><pre class="programlisting">
+java -p greeter-lib.jar;mod5 -m MOD/p2.Client
+								</pre><p>
+							</p>							
+						</li><li class="listitem">
+							<p>
+								<code class="code">--module-source-path</code>
+							</p>
+							<p>
+								Specify where to find input source files for multiple modules.
+							</p>
+							<p>
+								Assume <code class="code">src</code> directory contains several modules directories:
+								</p><pre class="programlisting">
+C:\1Z0-817\SRC
+&#9500;&#9472;&#9472;&#9472;modA
+&#9474;       module-info.class
+&#9474;
+&#9492;&#9472;&#9472;&#9472;modB
+        module-info.class
+								</pre><p>
+								Then you can use:
+								</p><pre class="programlisting">
+javac --module-source-path src ...
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--describe-module</code> (<code class="code">-d</code>)
+							</p>
+							<p>
+								Describe the module:
+								</p><pre class="programlisting">
+java --describe-module java.base
+
+java.base@11.0.2
+exports java.io
+exports java.lang
+...
+								</pre><p>
+								or describe module contained in JAR:
+								</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --describe-module --file=client-mod.jar
+
+MOD jar:file:///C:/1Z0-817/client-mod.jar/!module-info.class
+requires greeter.lib
+requires java.base mandated
+contains p2
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--add-modules</code>
+							</p>
+							<p>
+								Adds the specified modules to the default set of modules.
+								</p><pre class="programlisting">
+jlink --module-path modA;modB --add-modules MOD --output greeterapp 
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--list-modules</code>
+							</p>
+							<p>
+								List all observable modules in Java
+								</p><pre class="programlisting">
+java --list-modules
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--module &lt;module_name&gt;</code> (<code class="code">-m</code>) for <code class="code">javac</code> compiler command
+							</p>
+							<p>
+								Compile only the specified module, check timestamps
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--module &lt;module&gt;[/&lt;mainclass&gt;]</code> (<code class="code">-m</code>) for <code class="code">java</code> interpreter command
+							</p>
+							<p>
+								Executes the main class in a module:
+								</p><pre class="programlisting">
+java -p service.jar;provider.jar;service-client -m modC/app.Client
+								</pre><p>
+							</p>							
+						</li></ul></div><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						<code class="code">--add-exports</code>, <code class="code">--add-opens</code>, <code class="code">--add-modules</code>, 
+						<code class="code">--add-reads</code>, and <code class="code">--patch-module</code> are NOT part of the Java 11 exam.
+					</p>
+				</td></tr></table></div>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.2.&nbsp;
+					 Declare modules and enable access between modules
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;2.&nbsp;Services in a Modular Application</td></tr></table></div></body></html>

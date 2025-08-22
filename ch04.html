@@ -1,0 +1,584 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch03s02.html" title="3.2.&nbsp; Define and write functional interfaces"><link rel="next" href="ch04s02.html" title="4.2.&nbsp; Search stream data using search findFirst, findAny, anyMatch, allMatch and noneMatch methods"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch04s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap4"></a>Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c4s1"></a>4.1.&nbsp;
+					 Extract stream data using <code class="code">map</code>, <code class="code">peek</code>, and <code class="code">flatMap</code> methods
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8. Streams.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					Stream is a sequence of elements from a source supporting sequential and parallel aggregate operations.
+					The <span class="emphasis"><em>source</em></span> here refers to a <code class="code">Collection</code> (e.g. <code class="code">java.util.List</code>,
+					<code class="code">java.util.Set</code>)	or an array	which provides data	to a <code class="code">Stream</code>. The <code class="code">Stream</code>
+					keeps the order of the data as it is in the source.
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("Java", "is", "not", "great");
+list.stream()
+    .filter(s -&gt; !s.startsWith("n"))
+    .map(String::toUpperCase)
+    .forEach(s -&gt; System.out.print(s + " "));
+}
+
+					</pre><p>
+					output:
+					</p><pre class="programlisting">
+JAVA IS GREAT
+					</pre><p>
+				</p>
+				<p>
+					A <code class="code">Collection</code> (source) is an in-memory data structure to hold values and before we start using
+					<code class="code">Collection</code>, all the values should have been populated. Whereas a <code class="code">Stream</code> is a data
+					structure that is computed on-demand.
+				</p>
+				<p>
+					<code class="code">Stream</code> does not store data, it operates on the source data structure (<code class="code">Collection</code> or array)
+					and produce pipelined data that we can use and perform specific operations. For example, we can create a <code class="code">Stream</code>
+					from a <code class="code">java.util.List</code> and filter it based on a condition as shown above.
+				</p>
+				<p>
+					<span class="bold"><strong>Intermediate Operations</strong></span>
+				</p>
+				<p>
+					Stream API operations that returns a new <code class="code">java.util.stream.Stream</code> are called
+					<span class="bold"><strong>intermediate operations</strong></span>. Most of the times, these operations are lazy in
+					nature, computation on the source data is only performed when the terminal operation is initiated, and
+					source elements are consumed only as needed. Intermediate operations are never the final result producing
+					operations. Commonly used intermediate operations are <code class="code">filter(...)</code> and <code class="code">map(...)</code>.
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.filter(...)</code></strong></span>
+							</p>
+							<p>
+								You can filter a stream using the <code class="code">Stream.filter(...)</code> method:
+								</p><pre class="programlisting">
+
+Stream&lt;T&gt; filter(Predicate&lt;? super T&gt; predicate);
+
+								</pre><p>
+								 Here is a stream filtering example:
+								</p><pre class="programlisting">
+stream.filter(s -&gt; !s.startsWith("n"));
+								</pre><p>
+								The <code class="code">filter(...)</code> method takes a <code class="code">Predicate</code> functional interface as parameter.
+								The <code class="code">Predicate</code> interface takes a single parameter and returns a <code class="code">boolean</code>
+								primitive. If you look at the lambda expression above, you can see that it takes a single
+								parameter <code class="code">s</code> and returns a <code class="code">boolean</code> -- the result of the
+								<code class="code">!s.startsWith("n")</code> method call.
+							</p>
+							<p>
+								When you call the <code class="code">filter(...)</code> method on a <code class="code">Stream</code>, the filter
+								passed as parameter to the <code class="code">filter(...)</code> method is stored internally. No filtering takes place
+								yet (lazy processing).
+							</p>
+							<p>
+								The parameter passed to the <code class="code">filter(...)</code> function determines what items in the stream
+								should be processed, and which that should be excluded from the processing. If the
+								<code class="code">Predicate.test(T t)</code> method of the parameter passed to
+								<code class="code">filter(...)</code> returns <code class="code">true</code> for an item, that means it should
+								be processed. If <code class="code">false</code> is returned, the item is not processed.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.map(...)</code></strong></span>
+							</p>
+							<p>
+								 It is possible to map the items in a collection to other objects using
+								 <code class="code">Stream.map(...)</code> method:
+								 </p><pre class="programlisting">
+
+&lt;R&gt; Stream&lt;R&gt; map(Function&lt;? super T, ? extends R&gt; mapper);
+
+								 </pre><p>
+								 In other words, for each item in the collection you create a new object based on that item. Here
+								 is a simple Java stream mapping example:
+								 </p><pre class="programlisting">
+stream.map(s -&gt; s.toUpperCase());
+								 </pre><p>
+								This example maps all strings in the items collection to their uppercase equivalents.
+							</p>
+							<p>
+								NOTE: this example does not actually perform the mapping (all intermediate operations are lazy).
+								It only configures the stream for mapping. Once one of the stream processing methods are invoked,
+								the mapping will be performed.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.distinct()</code></strong></span>
+							</p>
+							<p>
+								The <code class="code">Stream.distinct()</code> method in stream API returns stream with distinct
+								elements. Whether or not element is distinct is decided by <code class="code">equals()</code> method of
+								<code class="code">Object</code> class.
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+Stream&lt;T&gt; distinct();
+
+								</pre><p>
+								Here is a simple example:
+								</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("aA","AA","Aa", "Aa", "AA");
+long l = list.stream().distinct().count();
+System.out.println("Number of distinct elements : " + l);
+
+								</pre><p>
+								Output:
+								</p><pre class="programlisting">
+Number of distinct elements : 3
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.peek(...)</code></strong></span>
+							</p>
+							<p>
+								 The <code class="code">Stream.peek(...)</code> returns <code class="code">Stream</code> itself after applying the action passed as
+								 <code class="code">Consumer</code> object.
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+Stream&lt;T&gt; peek(Consumer&lt;? super T&gt; action)
+
+								</pre><p>
+								The <code class="code">Stream.peek(...)</code> is extremely useful during debugging. It allows you to peek into the stream
+								before an action is encountered. Here is a simple example:
+								</p><pre class="programlisting">
+
+Stream&lt;String&gt; words = Stream.of("lower", "case", "text");
+List&lt;String&gt; list = words
+    .peek(s -&gt; System.out.println(s))
+    .map(s -&gt; s.toUpperCase())
+    .collect(Collectors.toList());
+System.out.println(list);
+
+								</pre><p>
+								Output:
+								</p><pre class="programlisting">
+lower
+case
+text
+[LOWER, CASE, TEXT]
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Terminal Operations</strong></span>
+				</p>
+				<p>
+					Stream API operations that returns a result or produce a side effect. Once the terminal method is called
+					on a stream, it consumes the stream and after that we can not use stream. Terminal operations are eager
+					in nature i.e. they process all the elements (unless it's a short-circuiting terminal operation) in the 
+					stream before returning the result. Commonly used terminal
+					methods are <code class="code">forEach</code>, <code class="code">toArray</code>, <code class="code">min</code>, <code class="code">max</code>,
+					<code class="code">findFirst</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code>, etc. You can identify terminal
+					methods from the return type, <span class="bold"><strong>they will never return a <code class="code">Stream</code></strong></span>.
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.collect(...)</code></strong></span>
+							</p>
+							<p>
+								<code class="code">Stream.collect(...)</code> is a terminal operation to transform the elements of
+								the stream into a different kind of result, e.g. a <code class="code">java.util.List</code>, <code class="code">java.util.Set</code>
+								or <code class="code">java.util.Map</code>:
+								</p><pre class="programlisting">
+
+&lt;R, A&gt; R collect(Collector&lt;? super T, A, R&gt; collector);
+
+								</pre><p>
+							</p>
+							<p>
+								<code class="code">Stream.collect(...)</code> accepts a <code class="code">Collector</code> interface which consists
+								of several operations including: <code class="code">supplier()</code>, <code class="code">accumulator()</code>, a
+								<code class="code">combiner()</code>, <code class="code">finisher()</code>:
+								</p><pre class="programlisting">
+
+public interface Collector&lt;T, A, R&gt; {
+    Supplier&lt;A&gt; supplier();
+
+    BiConsumer&lt;A, T&gt; accumulator();
+
+    BinaryOperator&lt;A&gt; combiner();
+
+    Function&lt;A, R&gt; finisher();
+
+    ...
+
+}
+
+								</pre><p>
+								Java 11 supports various built-in
+								collectors via the <code class="code">java.util.stream.Collectors</code> <code class="code">final</code> class. So for the most common operations you
+								do not have to implement a <code class="code">Collector</code> yourself:
+								</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("Java", "is", "not", "great");
+List&lt;String&gt; filtered = list.stream()
+    .filter(item -&gt; item.startsWith("J"))
+    .collect(Collectors.toList());
+System.out.print(filtered.get(0));
+
+								</pre><p>
+								This example creates a stream, adds a filter, and collects all object accepted by the filter in a
+								<code class="code">java.util.List</code>. The filter only accepts items (strings) which start with the
+								character <code class="code">J</code>. The resulting <code class="code">java.util.List</code> thus contains all strings from the
+								original list which starts with the character <code class="code">J</code>. Output is:
+								</p><pre class="programlisting">
+Java
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.min(...) / Stream.max(...)</code></strong></span>
+							</p>
+							<p>
+								The <code class="code">Stream.min(...)</code> and <code class="code">Stream.max(...)</code> methods are stream processing
+								terminal methods. Once these are called, the stream will be iterated, filtering and mapping
+								applied, and the minimum or maximum value in the stream will be returned:
+								</p><pre class="programlisting">
+
+Optional&lt;T&gt; min(Comparator&lt;? super T&gt; comparator);
+
+Optional&lt;T&gt; max(Comparator&lt;? super T&gt; comparator);
+
+								</pre><p>
+							</p>
+							<p>
+								The <code class="code">Stream.min(...)</code> and <code class="code">Stream.max(...)</code> methods return an
+								<code class="code">Optional</code> instance which has a <code class="code">get()</code> method, which you use to
+								obtain the value. In case the <code class="code">Optional</code> has no value the <code class="code">get()</code> method will
+								throw <code class="code">NoSuchElementException</code>.
+							</p>
+							<p>
+								The <code class="code">Stream.min(...)</code> and <code class="code">Stream.max(...)</code> methods take a <code class="code">java.util.Comparator</code>
+								as parameter. The <code class="code">Comparator.comparing(...)</code> method creates a
+								<code class="code">Comparator</code> based on the lambda expression passed to it. In fact, the
+								<code class="code">comparing(...)</code> method takes a <code class="code">Function</code> which is a functional interface
+								suited for lambda expressions. It takes one parameter and returns a value:
+								</p><pre class="programlisting">
+
+Comparator&lt;Person&gt; byLastName = Comparator.comparing(Person::getLastName);
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.findAny()</code></strong></span>
+							</p>
+							<p>
+								The <code class="code">Stream.findAny()</code> finds any element in the stream, which may be cheaper than
+								<code class="code">findFirst()</code> for some streams. This is a <span class="bold"><strong>short circuit terminal operation</strong></span>.
+								A short circuit terminal operation potentially allows processing of a stream to stop early without
+								examining all the elements.
+								</p><pre class="programlisting">
+
+Optional&lt;T&gt; findAny();
+
+								</pre><p>
+								Here is an example:
+								</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("Java", "is", "not", "great");
+Optional&lt;String&gt; result = list.stream()
+    .filter(item -&gt; item.contains("t"))
+    .findAny();
+System.out.print(result.get());
+
+								</pre><p>
+								This example processes elements from collection one by one and gets the first element that contains
+								character <code class="code">t</code>, and then passes to <code class="code">findAny</code> method. The <code class="code">findAny</code>
+								method immediately stops pipeline execution, so no further elements will be processed. The possible 
+								output is:
+								</p><pre class="programlisting">
+not
+								</pre><p>
+								</p><div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+									<p>
+										It will <span class="emphasis"><em>most likely</em></span> return '<code class="code">not</code>' but there is no 
+										guarantee for this. Printing '<code class="code">great</code>' also a possible option.
+									</p>
+								</td></tr></table></div><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.findFirst()</code></strong></span>
+							</p>
+							<p>
+								The method <code class="code">findFirst()</code> provides the first element from the stream. The return value
+								is an <code class="code">Optional</code>, in case of an empty stream an empty optional.
+								</p><pre class="programlisting">
+
+Optional&lt;T&gt; findFirst();
+
+								</pre><p>
+								It will return first element from stream and then will not process any further elements, as it is
+								a <span class="bold"><strong>short circuit terminal operation</strong></span>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Stream.count()</code></strong></span>
+							</p>
+							<p>
+								The <code class="code">Stream.count()</code> method simply returns the number of elements in the
+								stream after filtering has been applied.
+								</p><pre class="programlisting">
+long count();
+								</pre><p>
+								Here is an example:
+								</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("Java", "is", "not", "great");
+long l = list.stream()
+    .filter(item -&gt; item.startsWith("J"))
+    .count();
+System.out.print(l);
+
+								</pre><p>
+								This example iterates the stream and keeps all elements that start with the character <code class="code">J</code>,
+								and then counts these elements. The <code class="code">count()</code> method returns a <code class="code">long</code> which is
+								the count of elements in the stream after filetering it:
+								</p><pre class="programlisting">
+1
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Stream Pipelines</strong></span>
+				</p>
+				<p>
+					To perform a computation, stream operations are composed into a <span class="bold"><strong>stream pipeline</strong></span>.
+					A stream pipeline consists of:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								a source (which might be an array, a <code class="code">Collection</code>, a generator function, an I/O channel, etc.)
+							</p>
+						</li><li class="listitem">
+							<p>
+								zero or more intermediate operations (which transform a <code class="code">Stream</code> into another
+								<code class="code">Stream</code>, such as <code class="code">filter(Predicate p)</code>)
+							</p>
+						</li><li class="listitem">
+							<p>
+								a terminal operation (which produces a result or side-effect, such as <code class="code">count()</code>
+								or <code class="code">forEach(Consumer c)</code>)
+							</p>
+						</li></ul></div><p>
+					 Streams are lazy; computation on the source data is only performed when the terminal operation is initiated,
+					 and source elements are consumed only as needed.
+				</p>
+				<p>
+					<span class="bold"><strong>Applying a function to each element of a stream</strong></span>
+				</p>
+				<p>
+					Streams support the method <code class="code">map()</code>, which takes a <code class="code">java.util.function.Function</code> as an argument. 
+					The function is applied to each element, mapping it into a new element (the word mapping is used because it has a meaning similar to
+					transforming but with the nuance of "creating a new version of" rather than "modifying"). For example, in the
+					following code you pass a method reference <code class="code">Employee::getName</code> to the <code class="code">map(...)</code> method to
+					extract the names of the employees in the stream:
+					</p><pre class="programlisting">
+public class Employee {
+    private String name;
+    public Employee(String n) {
+        name = n;
+    }
+    public String getName() {
+        return name;
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("Mikalai"), new Employee("Volha"));
+Stream&lt;String&gt; names = emps.map(Employee::getName);
+List&lt;String&gt; staff = names.collect(Collectors.toList());
+System.out.print(staff);
+
+					</pre><p>
+					Output:
+					</p><pre class="programlisting">
+[Mikalai, Volha]
+					</pre><p>
+				</p>
+				<p>
+					Because the method <code class="code">Employee.getName()</code> returns a <code class="code">String</code>, the stream outputted
+					by the <code class="code">map()</code> method is of type <code class="code">Stream&lt;String&gt;</code>.
+				</p>
+				<p>
+					For example, if you wanted to find out the length of the name of each employee, you could do this by
+					chaining another <code class="code">map(...)</code> as follows:
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("Mikalai"), new Employee("Volha"));
+Stream&lt;String&gt; names = emps.map(Employee::getName);
+Stream&lt;Integer&gt; lengths = names.map(n -&gt; n.length());
+List&lt;Integer&gt; list = lengths.collect(Collectors.toList());
+System.out.println(list);
+
+					</pre><p>
+					Output:
+					</p><pre class="programlisting">
+[7, 5]
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Primitive stream specializations</strong></span>
+				</p>
+				<p>
+					Java 8.0 introduced three <span class="bold"><strong>primitive specialized stream interfaces</strong></span> that
+					support specialized methods (like <code class="code">max()</code>, <code class="code">sum()</code>, <code class="code">average()</code>) to
+					work with streams of numbers: <code class="code">IntStream</code>, <code class="code">DoubleStream</code>, and <code class="code">LongStream</code>,
+					that respectively specialize the elements of a stream to be <code class="code">int</code> primitives,
+					<code class="code">double</code> primitives, and <code class="code">long</code> primitives -- and thereby avoid hidden boxing costs.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						The <code class="code">java.util.stream.Stream</code> interface has <code class="code">max(...)</code> and <code class="code">min(...)</code> methods, but they
+						are not with empty parameter list as in <code class="code">IntStream</code>, <code class="code">DoubleStream</code>,
+						<code class="code">LongStream</code> and require a <code class="code">Comparator</code> interface passed in as a parameter:
+					</p>
+					<p>
+						The <code class="code">java.util.stream.Stream</code> interface does not have <code class="code">average()</code> and <code class="code">sum()</code> methods.
+					</p>
+				</td></tr></table></div>
+				<p>
+					Each of these three interfaces brings new methods to perform common numeric reductions such as <code class="code">sum()</code>
+					to calculate the sum of a numeric stream and <code class="code">max()</code> to find the maximum element. In addition,
+					they have methods to convert back to a stream of <code class="code">Object</code>s when necessary.
+				</p>
+				<p>
+					<span class="bold"><strong>Mapping to a numeric stream</strong></span>
+				</p>
+				<p>
+					The most common methods you will use to convert a stream to a primitive specialized version are <code class="code">Stream.mapToInt()</code>,
+					<code class="code">Stream.mapToDouble()</code>, and <code class="code">Stream.mapToLong()</code>. These methods work exactly like the
+					method <code class="code">Stream.map()</code> that you saw earlier but return a specialized stream instead of a
+					<code class="code">Stream&lt;T&gt;</code>. For example, you can use <code class="code">mapToInt()</code> as follows to calculate the
+					longest name of the employees:
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("Mikalai"), new Employee("Volha"), new Employee("Ivan"));
+Stream&lt;String&gt; names = emps.map(e -&gt; e.getName());
+IntStream lengths = names.mapToInt(n -&gt; n.length());
+int i = lengths.max().getAsInt();
+System.out.print(i);
+
+					</pre><p>
+					Here, the method <code class="code">mapToInt()</code> extracts all the lenghts from each name (represented as an <code class="code">int</code>)
+					and returns an <code class="code">IntStream</code> as the result (rather than a <code class="code">Stream&lt;Integer&gt;</code>). You can
+					then call the <code class="code">max()</code> method defined on the <code class="code">IntStream</code> interface to calculate the
+					longest name. <code class="code">IntStream</code> also supports other convenience methods such as <code class="code">sum()</code>,
+					<code class="code">min()</code>, and <code class="code">average()</code>.
+				</p>			
+				<p>
+					<span class="bold"><strong><code class="code">Stream.flatMap(...)</code></strong></span>
+				</p>
+				<p>
+					</p><pre class="programlisting">
+
+&lt;R&gt; Stream&lt;R&gt; flatMap(Function&lt;? super T,? extends Stream&lt;? extends R&gt;&gt; mapper)
+
+					</pre><p>
+					The <code class="code">Stream.flatMap(...)</code> method returns a stream consisting of the results of replacing
+					each element of this stream with the contents of a mapped stream produced by applying the provided
+					mapping function to each element. The function produces a stream for each input
+					element and the output streams are flattened. Performs one-to-many mapping.
+				</p>
+				<p>
+					The <code class="code">Stream.flatMap(...)</code> operation works as follows:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								It takes an input stream and produces an output stream using a mapping function.
+							</p>
+						</li><li class="listitem">
+							<p>
+								The mapping function takes an element from the input stream and maps the element to a
+								stream. The type of input element and the elements in the mapped stream may be different.
+								This step produces a stream of streams. Suppose the input stream is a
+								<code class="code">Stream&lt;T&gt;</code> and the mapped stream is
+								<code class="code">Stream&lt;Stream&lt;R&gt;&gt;</code> where <code class="code">T</code> and <code class="code">R</code> may be
+								the same or different.
+							</p>
+						</li><li class="listitem">
+							<p>
+								Finally, it flattens the output stream (that is, a stream of streams) to produce a stream. That
+								is, the <code class="code">Stream&lt;Stream&lt;R&gt;&gt;</code> is flattened to <code class="code">Stream&lt;R&gt;</code>.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					Let's look at a simple example. We have got a <code class="code">Stream</code> of lists of names, and we want all
+					the names from these in sequences. We can solve this problem using an approach like
+					the one in example below:
+					</p><pre class="programlisting">
+
+List&lt;String&gt; names1 = Arrays.asList("Dzmitry", "John");
+List&lt;String&gt; names2 = Arrays.asList("David", "Laura");
+Stream&lt;List&lt;String&gt;&gt; s = Stream.of(names1, names2);
+s.flatMap(names -&gt; names.stream()).forEach(System.out::println);
+
+					</pre><p>
+					output:
+					</p><pre class="programlisting">
+Dzmitry
+John
+David
+Laura
+					</pre><p>
+				</p>
+				<p>
+					We replace the <code class="code">List&lt;String&gt;</code> with a <code class="code">Stream&lt;String&gt;</code> using the
+					<code class="code">stream()</code> method, and <code class="code">flatMap</code> does the rest. The <code class="code">flatMap</code>'s associated
+					functional interface is the same as <code class="code">map</code>'s &#8212; the <code class="code">Function</code> &#8212; but its return type
+					is restricted to streams and not any value.
+				</p>
+				<p>
+					The <code class="code">flatMap(...)</code> transforms each element of a stream into another form (just like <code class="code">map(...)</code>),
+					and generates sub-streams of the newly formed elements. Finally, it flattens all of the sub-streams into a single
+					stream of elements. As the <code class="code">flatMap(...)</code> is a map type of function, it also takes a function
+					and applies (maps) that function to each of the element in the stream.
+				</p>
+				<p>
+					The difference between <code class="code">map(...)</code> and <code class="code">flatMap(...)</code> is:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								The <code class="code">map(...)</code> accepts a function that returns a mapped element and then the <code class="code">map(...)</code>
+								function returns a stream of such elements (1 to 1).
+							</p>
+						</li><li class="listitem">
+							<p>
+								The <code class="code">flatMap</code> accepts a function that returns streams of the mapped elements and then
+								the <code class="code">flatMap</code> finally returns a collective stream of all of the sub-streams that are
+								created by the each execution of the passed function (1 to 0...n).
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div>
+			
+			
+			
+			
+						
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch04s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.2.&nbsp;
+					Define and write functional interfaces
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;4.2.&nbsp;
+					Search stream data using search <code class="code">findFirst</code>, <code class="code">findAny</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code> and 
+					<code class="code">noneMatch</code> methods
+				</td></tr></table></div></body></html>

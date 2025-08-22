@@ -1,0 +1,185 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;2.&nbsp;Services in a Modular Application</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch01s03.html" title="1.3.&nbsp; Describe how a modular project is compiled and run"><link rel="next" href="ch02s02.html" title="2.2.&nbsp; Design a service type, load the services using ServiceLoader, check for dependencies of the services including consumer module and provider module"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;2.&nbsp;Services in a Modular Application</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch02s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap2"></a>Chapter&nbsp;2.&nbsp;Services in a Modular Application</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c2s1"></a>2.1.&nbsp;
+					  Describe the components of Services including directives
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#SERVICE_LOADER_JAVA_DOC" title="ServiceLoader JavaDoc">[SERVICE_LOADER_JAVA_DOC]</a> ServiceLoader JavaDoc
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					Java since version 6 supported service-provider loading facility via the <code class="code">java.util.ServiceLoader</code> class. 
+					Using Service Loader you can have a service provider interface (SPI) simply called Service, and multiple implementations of the SPI simply 
+					called Service Providers. These Service Providers in Java 8 and earlier are located in the classpath and loaded at 
+					run time. 
+				</p>
+				<p>
+					Since Java 9 you can develop Services and Service Providers as modules. A service module declares one or more interfaces whose 
+					implementations will be provided at run time by some provider modules. A provider module declares what implementations of service interfaces it 
+					<code class="code">provides</code>.The module that discovers and loads service providers must contain a <code class="code">uses</code> directive in its declaration.
+ 
+				</p>
+				<p>
+					<span class="bold"><strong>Developing Service module</strong></span> 
+				</p>
+				<p>
+					Let's say we have a service interface <code class="code">p1.GreeterIntf</code>:
+					</p><pre class="programlisting">
+package p1;
+
+public interface GreeterIntf {
+    public abstract void greet();
+}
+					</pre><p>
+					Export the <code class="code">p1</code> package in <code class="code">module-info.java</code>:
+					</p><pre class="programlisting">
+module modS {
+    exports p1;
+}
+					</pre><p>
+					Compile:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac service/module-info.java service/p1/GreeterIntf.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\SERVICE
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p1
+        GreeterIntf.class
+        GreeterIntf.java
+					</pre><p>
+					Package as JAR:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file service.jar -C service .
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Developing Service Provider module</strong></span>
+				</p>
+				<p>
+					Let's create service interface implementation:
+					</p><pre class="programlisting">
+package p2;
+
+import p1.GreeterIntf;
+
+public class GreeterImpl implements GreeterIntf {
+
+    @Override
+    public void greet() {
+        System.out.println("Greeting from GreeterImpl !");
+    }    
+}
+					</pre><p>
+				</p>
+				<p>
+					A service provider will use "<code class="code">provides ... with ...</code>" directive to declare what service interface it intends to use (by using 
+					<code class="code">provides</code> keyword) and what implementation of the interface it wants to expose (by using <code class="code">with</code> keyword).
+					</p><pre class="programlisting">
+module modP {
+    requires modS;
+    provides p1.GreeterIntf with p2.GreeterImpl;
+}
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						We don't have to specify the service implementation in a file under the resource directory <code class="code">META-INF/services</code> as of Java 9.
+					</p>
+				</td></tr></table></div>
+				<p>
+					Compile the code:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac -p service.jar provider/module-info.java provider/p2/GreeterImpl.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\PROVIDER
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;p2
+        GreeterImpl.class
+        GreeterImpl.java
+					</pre><p>
+					Create provider JAR:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file provider.jar -C provider .
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Developing Service client application</strong></span>
+				</p>
+				<p>
+					Create a Client class:
+					</p><pre class="programlisting">
+
+package app;
+
+import java.util.ServiceLoader;
+import p1.GreeterIntf;
+
+public class Client {
+    public static void main(String[] args) {
+        ServiceLoader&lt;GreeterIntf&gt; services = ServiceLoader.load(GreeterIntf.class);
+        services.findFirst().ifPresent(s -&gt; s.greet());
+    }
+}
+
+
+					</pre><p>
+				</p>
+				<p>
+					In order for a service to be used, its providers need to be discovered and loaded. The <code class="code">ServiceLoader</code> class
+					does the work of discovering and loading the service providers. The module that discovers and loads service providers must 
+					contain a <code class="code">uses &lt;service interface name&gt;</code> directive in its declaration.
+				</p>
+				<p>
+					If a module uses the ServiceLoader&lt;GreeterIntf&gt; class to load the instances
+					of service providers for a service interface named <code class="code">p1.GreeterIntf</code>, the module declaration must contain the 
+					<code class="code">uses p1.GreeterIntf</code> declaration as follows:
+					</p><pre class="programlisting">
+module modC {
+    requires modS;
+    uses p1.GreeterIntf;
+}
+					</pre><p>
+				</p>
+				<p>
+					Compile the client code:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac -p service.jar service-client/module-info.java service-client/app/Client.java
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817\SERVICE-CLIENT
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;app
+        Client.class
+        Client.java
+					</pre><p>
+				</p>
+				<p>
+					Run the client code:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;java -p service.jar;provider.jar;service-client -m modC/app.Client
+
+Greeting from GreeterImpl !					
+					</pre><p>
+				</p>
+			</div>
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch01s03.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch02s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">1.3.&nbsp;
+					   Describe how a modular project is compiled and run
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;2.2.&nbsp;
+					Design a service type, load the services using <code class="code">ServiceLoader</code>, check for dependencies 
+					of the services including consumer module and provider module
+				</td></tr></table></div></body></html>

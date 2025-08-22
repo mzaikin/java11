@@ -1,0 +1,256 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;7.&nbsp;Local-Variable Type Inference</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch06s02.html" title="6.2.&nbsp; Use jdeps to determine dependencies and identify way to address the cyclic dependencies"><link rel="next" href="ch07s02.html" title="7.2.&nbsp; Create and use lambda expressions with local-variable type inferred parameters"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;7.&nbsp;Local-Variable Type Inference</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch07s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap7"></a>Chapter&nbsp;7.&nbsp;Local-Variable Type Inference</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c7s1"></a>7.1.&nbsp;
+					  Use local-variable type inference
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#LVTI_STYLE" title="Style Guidelines for Local Variable Type Inference in Java">[LVTI_STYLE]</a> Style Guidelines for Local Variable Type Inference in Java
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Type inference</strong></span> refers to the automatic detection of 
+					the datatype of a variable, done <span class="bold"><strong>at compile time</strong></span>.
+				</p>
+				<p>
+					Local variable type inference is a feature in Java 10.0 that allows the developer to skip the 
+					type declaration associated with local variables (those defined inside method definitions, initialization blocks, 
+					for-loops, and other blocks like if-else), and the type is inferred by the JDK. It will, then, be the job 
+					of the compiler to figure out the datatype of the variable.
+				</p>
+				<p>
+					In Java 11.0 the local variable type inferrence was extended for lambda parameters (see details in the next section).
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Despite the introduction of <code class="code">var</code>, Java is still a statically typed language, and there 
+						should be enough information to infer the type of local variable. If not, the compiler will throw 
+						an error.
+					</p>
+					<p>
+						The <code class="code">var</code> IS NOT a keyword. Instead, it is a <span class="bold"><strong>reserved type name</strong></span>. This means 
+						that existing code that uses <code class="code">var</code> as a variable, method, or package name WILL NOT be affected.
+					</p>
+					<p>						 
+						Existing code that uses <code class="code">var</code> as a class or interface name WILL be affected.
+					</p>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Legal type inferrence usage</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								In a static/instance initialization block:
+								</p><pre class="programlisting">
+class A { 
+    static  { 
+        var s = "Hello, Java!";         
+    }
+    
+    {
+        var s = "Hello, World!";
+    }
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As a local variable in a method:
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var s = "Hello, Java!";
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As iteration variable in enhanced for-loop:
+								</p><pre class="programlisting">
+
+List&lt;String&gt; l = List.of("Hello", ", ", "Java!");
+for (var s : l) {
+    System.out.print(s);
+}    
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As looping index in for-loop:
+								</p><pre class="programlisting">
+for (var i = 0; i &lt; 10; i++) {
+    System.out.print(i);
+}    
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As a value from another method:							
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x = getId();
+}
+static int getId() {
+  return 1;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As a return value in a method:
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    int x = getId();
+}
+static int getId() {
+    var id = 1;
+    return id;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								As resource variable in the try-with-resource block:
+								</p><pre class="programlisting">
+public void printFile() throws IOException {
+    try (var input = new FileInputStream("file.txt")) {
+        ...
+    }
+}
+								</pre><p>
+							</p>
+						</li></ul></div><p>	
+				</p>
+				<p>
+					<span class="bold"><strong>Illegal type inferrence usage</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Not permitted as class field:
+								</p><pre class="programlisting">
+public class A {
+    static var i = 0;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not permitted as instance variable:
+								</p><pre class="programlisting">
+public class A {
+    var i = 0;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed as local variable without initialization:								
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed as parameter for a method:							
+								</p><pre class="programlisting">
+public static void main(var[] args) {
+    ...
+}
+
+public void println(var x) {
+    System.out.print(x)
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed as method return type in method signature:							
+								</p><pre class="programlisting">
+public var getId() {
+    return 1;
+}								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed with explicit initialization to <code class="code">null</code>:							
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x = null;
+}								</pre><p>
+							</p>
+							<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+								<p>
+									Can be initialized to <code class="code">null</code> with <span class="bold"><strong>explicit cast</strong></span>:
+									</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x = (Integer) null;  // compiles OK
+}
+									</pre><p>
+								</p>
+							</td></tr></table></div>
+						</li><li class="listitem">
+							<p>
+								Not allowed to reassign to a different [incompatible] type:							
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x = 0;  // inferred to be of type int
+    x = "Java"; // ERROR - String cannot be converted/assigned to int
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed in compound declaration, i.e. when we declare multiple local 
+								variables, even with initialization:							
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var x, y = 0;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed as lambda expression type (still needs an explicit target type):							
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var p = (String[] s) -&gt; s.length &gt; 0;
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed with array initializer (an array initializer still needs an 
+								explicit target type):
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var arr = {1, 2, 3};
+}
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed with method reference (still needs an explicit target type):
+								</p><pre class="programlisting">
+public static void main(String[] args) {
+    var unaryOp = String::toLowerCase;
+}
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div>
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch07s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.2.&nbsp;
+					Use <code class="code">jdeps</code> to determine dependencies and identify way to address the cyclic dependencies
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;7.2.&nbsp;
+					Create and use lambda expressions with local-variable type inferred parameters
+				</td></tr></table></div></body></html>

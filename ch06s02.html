@@ -1,0 +1,495 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>6.2.&nbsp; Use jdeps to determine dependencies and identify way to address the cyclic dependencies</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch06.html" title="Chapter&nbsp;6.&nbsp;Migration to a Modular Application"><link rel="prev" href="ch06.html" title="Chapter&nbsp;6.&nbsp;Migration to a Modular Application"><link rel="next" href="ch07.html" title="Chapter&nbsp;7.&nbsp;Local-Variable Type Inference"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">6.2.&nbsp;
+					Use <code class="code">jdeps</code> to determine dependencies and identify way to address the cyclic dependencies
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch06.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;6.&nbsp;Migration to a Modular Application</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch07.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c6s2"></a>6.2.&nbsp;
+					Use <code class="code">jdeps</code> to determine dependencies and identify way to address the cyclic dependencies
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JDEPS_DOC" title="JDeps documentation">[JDEPS_DOC]</a> <code class="code">jdeps</code> tool documentation
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					</p><pre class="programlisting">
+jdeps [options] path ...
+					</pre><p>
+				</p>
+				<p>
+					The <code class="code">jdeps</code> command shows the package-level or class-level dependencies of Java class files. The input 
+					class can be a path name to a <code class="code">.class</code> file, a directory, a JAR file, or it can be a fully qualified 
+					class name to analyze all class files. The options determine the output. By default, the <code class="code">jdeps</code> command 
+					writes the dependencies to the system output. The command can generate the dependencies in DOT language (the 
+					<code class="code">-dotoutput</code> option). 
+				</p>
+				<p>
+					Possible options:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">-dotoutput dir_name</code> (or <code class="code">--dot-output dir_name</code>)
+							</p>
+							<p>
+								Specifies the destination directory for DOT file output. If this option is specified, then the <code class="code">jdeps</code> 
+								command generates one <code class="code">.dot</code> file for each analyzed archive named <code class="code">archive-file-name.dot</code> that 
+								lists the dependencies, and also a summary file named <code class="code">summary.dot</code> that lists the dependencies among 
+								the archive files.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">-s</code> (or <code class="code">-summary</code>)
+							</p>
+							<p>
+								Prints a dependency summary only.
+							</p>						
+						</li><li class="listitem">
+							<p>
+								<code class="code">-jdkinternals</code> (or <code class="code">--jdk-internals</code>)
+							</p>
+							<p>
+								Finds class-level dependencies in the JDK internal APIs. By default, this option analyzes all classes 
+								specified in the <code class="code">--class-path</code> option and input files unless you specified the <code class="code">-include</code> 
+								option. You can&#8217;t use this option with the <code class="code">-p</code>, <code class="code">-e</code>, and <code class="code">-s</code> options.
+							</p>
+							<p>
+								Warning: The JDK internal APIs are inaccessible.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">-cp path</code> (or <code class="code">-classpath path</code>, or <code class="code">--class-path path</code>)
+							</p>
+							<p>
+								Specifies where to find class files.
+							</p>						
+						</li><li class="listitem">
+							<p>
+								<code class="code">--module-path module_path</code>
+							</p>						
+							<p>
+								Specifies the module path.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">&#8211;m module_name</code> (or <code class="code">--module module_name</code>)
+							</p>
+							<p>
+								Specifies the root module for analysis.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--generate-module-info dir</code>
+							</p>
+							<p>
+								Generates <code class="code">module-info.java</code> under the specified directory. The specified JAR files 
+								will be analyzed. This option cannot be used with <code class="code">--dot-output</code> or 
+								<code class="code">--class-path</code> options. Use the <code class="code">--generate-open-module</code> option 
+								for open modules.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">--generate-open-module dir</code>
+							</p>
+							<p>
+								Generates <code class="code">module-info.java</code> for the specified JAR files under the specified directory as 
+								open modules. This option cannot be used with the <code class="code">--dot-output</code> or 
+								<code class="code">--class-path</code> options.
+							</p>
+						</li></ul></div><p> 
+				</p>
+				<p>
+					Assume we have several JARs as follows:
+					</p><pre class="programlisting">
+C:\1Z0-817
+&#9474;
+&#9500;&#9472;&#9472;&#9472;app
+&#9474;   &#9492;&#9472;&#9472;&#9472;by
+&#9474;       &#9492;&#9472;&#9472;&#9472;iba
+&#9474;           &#9492;&#9472;&#9472;&#9472;app
+&#9474;                   App.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;info.logger
+    &#9492;&#9472;&#9472;&#9472;by
+        &#9492;&#9472;&#9472;&#9472;iba
+            &#9492;&#9472;&#9472;&#9472;logging
+                    InfoLogger.java
+					</pre><p>
+					</p><pre class="programlisting">
+package by.iba.app;
+
+import by.iba.logging.InfoLogger;
+import java.util.logging.Logger;
+
+public class App {
+
+    public static void main(String... args) {
+        InfoLogger.log("Application started ...");
+        Logger logger = InfoLogger.getLog();
+        logger.info("Application finished.");
+    }    
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package by.iba.logging;
+
+import java.util.logging.Logger;
+
+public class InfoLogger {
+    
+    private static final Logger LOG = Logger.getLogger(InfoLogger.class.getName());
+    
+    public static void log(String msg) {
+        LOG.info(msg);
+    }
+
+    public static Logger getLog() {
+        return LOG;
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+javac info.logger\by\iba\logging\InfoLogger.java
+jar --create --file info-logger.jar -C info.logger .
+
+javac -cp info-logger.jar app\by\iba\app\App.java
+jar --create --file app.jar -C app .
+					</pre><p>
+				</p>
+				<p>
+					Now we can check <span class="bold"><strong>class path dependencies</strong></span>:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps -cp info-logger.jar -s app.jar
+
+app.jar -&gt; info-logger.jar
+app.jar -&gt; java.base
+app.jar -&gt; java.logging
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps -s info-logger.jar
+
+info-logger.jar -&gt; java.base
+info-logger.jar -&gt; java.logging
+					</pre><p>
+				</p>
+				<p>
+					We can automatically generate module definitions for the 2 JARs:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --generate-module-info . *.jar
+
+writing to .\app\module-info.java
+writing to .\info.logger\module-info.java
+					</pre><p>			
+				</p>
+				<p>
+					The content of generated <code class="code">module-info.java</code> files as follows:
+					</p><pre class="programlisting">
+module app {
+    requires info.logger;
+    requires java.logging;
+    exports by.iba.app;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+module info.logger {
+    requires transitive java.logging;
+    exports by.iba.logging;
+}
+					</pre><p>					 
+				</p>
+				<p>
+					Re-create JARs as modular ones:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac info.logger\module-info.java info.logger\by\iba\logging\InfoLogger.java
+C:\1Z0-817&gt;jar --create --verbose --file info-logger.jar -C info.logger .
+
+C:\1Z0-817&gt;javac -p info-logger.jar app\module-info.java app\by\iba\app\App.java
+C:\1Z0-817&gt;jar --create --verbose --file app.jar -C app .
+					</pre><p>
+				</p>
+				<p>
+					Now we can check <span class="bold"><strong>module dependencies</strong></span>:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --module-path app.jar;info-logger.jar -summary --module app
+app -&gt; info.logger
+app -&gt; java.base
+app -&gt; java.logging
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --module-path app.jar;info-logger.jar -summary --module info.logger
+info.logger -&gt; java.base
+info.logger -&gt; java.logging
+					</pre><p>					
+				</p>
+				<p>
+					Also, you can visualize the dependencies for all JARs:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --module-path app.jar;info-logger.jar --dot-output . *.jar
+					</pre><p>
+					The results are several <code class="code">.dot</code> files in the current directory, we 
+					check the <code class="code">summary.dot</code>:
+					</p><pre class="programlisting">
+digraph "summary" {
+  "app"                                              -&gt; "info.logger";
+  "app"                                              -&gt; "java.base (java.base)";
+  "app"                                              -&gt; "java.logging (java.logging)";
+  "info.logger"                                      -&gt; "java.base (java.base)";
+  "info.logger"                                      -&gt; "java.logging (java.logging)";
+}
+					</pre><p>
+					You can visualize module dependency graph (e.g. at <code class="code">http://www.webgraphviz.com/</code>):
+				</p>
+				<p>
+					</p><div class="figure"><a name="d5e2726"></a><p class="title"><b>Figure&nbsp;6.4.&nbsp;Java application module dependency graph</b></p><div class="figure-contents">
+  						
+  						<div class="mediaobject"><img src="images/c6s200.gif" alt="Java application module dependency graph"></div>
+					</div></div><p><br class="figure-break">
+				</p>
+				<p>
+					<span class="bold"><strong>Cyclic dependencies</strong></span>
+				</p>
+				<p>
+					Cyclic dependencies between modules can be recognized by java compiler:
+					</p><pre class="programlisting">
+C:\1Z0-817
+&#9474;
+&#9500;&#9472;&#9472;&#9472;modA
+&#9474;       module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;modB
+        module-info.java
+					</pre><p>
+					</p><pre class="programlisting">
+module modA {
+    requires modB;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+module modB {
+    requires modA;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;javac --module-source-path . modA\module-info.java -d modA
+.\modB\module-info.java:2: error: cyclic dependence involving modA
+    requires modA;
+             ^
+error: cannot access module-info
+  cannot resolve modules
+modA\module-info.java:1: error: module not found: modB
+module modA {
+^
+3 errors
+					</pre><p>
+				</p>
+				<p>
+					Imagine we have the following application:
+					</p><pre class="programlisting">
+C:\1Z0-817
+&#9500;&#9472;&#9472;&#9472;modA
+&#9474;   &#9474;   module-info.java
+&#9474;   &#9474;
+&#9474;   &#9492;&#9472;&#9472;&#9472;pkgA
+&#9474;           ClassA.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;modB
+    &#9474;   module-info.java
+    &#9474;
+    &#9492;&#9472;&#9472;&#9472;pkgB
+            ClassB.java
+					</pre><p>
+					</p><pre class="programlisting">
+module modA {
+    requires modB;
+    exports pkgA;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgA;
+
+import pkgB.ClassB;
+
+public class ClassA {
+    public void methodA1() {    
+        new ClassB().methodB2();        
+    }
+    
+    public void methodA2() {
+        
+    }
+}					
+					</pre><p>
+					</p><pre class="programlisting">
+module modB {
+    requires modA;
+    exports pkgB;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgB;
+
+import pkgA.ClassA;
+
+public class ClassB {
+    public void methodB1() {
+        new ClassA().methodA2();
+    }
+    
+    public void methodB2() {
+    }    
+}
+					</pre><p>
+				</p>
+				<p>
+					</p><div class="figure"><a name="d5e2745"></a><p class="title"><b>Figure&nbsp;6.5.&nbsp;Java application cyclic dependency graph</b></p><div class="figure-contents">
+  						
+  						<div class="mediaobject"><img src="images/c6s201.gif" alt="Java application cyclic dependency graph"></div>
+					</div></div><p><br class="figure-break">
+				</p>
+				<p>
+					The solutions can be:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Merge <code class="code">pkgA.ClassA</code> and <code class="code">pkgB.ClassB</code> into a single module
+							</p>
+						</li><li class="listitem">
+							<p>
+								Break cycle by using interfaces. 
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					Let's try the second solution:
+				</p>
+				<p>
+					Add third <code class="code">modC</code> module and refactor all interfaces from class methods which create dependencies:
+					</p><pre class="programlisting">
+C:\1Z0-817\modC
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;pkgC
+        InterfaceA.java
+        InterfaceB.java
+					</pre><p>
+					</p><pre class="programlisting">
+module modC {
+    exports pkgC;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgC;
+
+public interface InterfaceA {
+    public void methodA1();
+    public void methodA2();
+}
+
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgC;
+
+public interface InterfaceB {
+    public void methodB1();
+    public void methodB2();    
+}
+					</pre><p>
+				</p>
+				<p>
+					Now, refactor <code class="code">modA</code> and <code class="code">modB</code>, to depend not on each other, 
+					but both depend on <code class="code">modC</code>.
+					</p><pre class="programlisting">
+module modA {
+    requires modC;
+    exports pkgA;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgA;
+
+import pkgC.InterfaceA;
+import pkgC.InterfaceB;
+
+public class ClassA implements InterfaceA {
+    
+    InterfaceB bIntf; 
+    
+    public ClassA(InterfaceB bIntf) {
+        this.bIntf = bIntf;
+    }
+    
+    @Override
+    public void methodA1() {    
+        bIntf.methodB2();
+    }
+    
+    @Override
+    public void methodA2() {        
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+module modB {
+    requires modC;
+    exports pkgB;
+}
+					</pre><p>
+					</p><pre class="programlisting">
+package pkgB;
+
+import pkgC.InterfaceA;
+import pkgC.InterfaceB;
+
+public class ClassB implements InterfaceB {
+    
+    InterfaceA aIntf;
+    
+    public ClassB(InterfaceA aIntf) {
+        this.aIntf = aIntf;
+    }
+    
+    @Override
+    public void methodB1() {
+        aIntf.methodA2();
+    }
+    
+    @Override
+    public void methodB2() {
+    }
+}
+					</pre><p> 
+				</p>
+				<p>
+					Now you can compile all three modules:
+					</p><pre class="programlisting">
+javac --module-source-path . modC\module-info.java modC\pkgC\InterfaceA.java modC\pkgC\InterfaceB.java -d .
+javac --module-source-path . modA\module-info.java modA\pkgA\ClassA.java -d .
+javac --module-source-path . modB\module-info.java modB\pkgB\ClassB.java -d .
+					</pre><p>
+				</p>
+				<p>
+					</p><div class="figure"><a name="d5e2776"></a><p class="title"><b>Figure&nbsp;6.6.&nbsp;Java application without cyclic dependency</b></p><div class="figure-contents">
+  						
+  						<div class="mediaobject"><img src="images/c6s202.gif" alt="Java application without cyclic dependency"></div>
+					</div></div><p><br class="figure-break">
+				</p>
+				<p>
+					Create modular JARs:
+					</p><pre class="programlisting">
+jar cvf modA.jar -C modA .
+jar cvf modB.jar -C modB .
+jar cvf modC.jar -C modC .
+					</pre><p>
+				</p>
+				<p>
+					Inspect dependency graph visually:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jdeps --module-path modA.jar;modB.jar;modC.jar --dot-output . *.jar
+					</pre><p>
+				</p>
+				<p>
+					</p><div class="figure"><a name="d5e2786"></a><p class="title"><b>Figure&nbsp;6.7.&nbsp;Java application without cyclic dependency</b></p><div class="figure-contents">
+  						
+  						<div class="mediaobject"><img src="images/c6s203.gif" alt="Java application without cyclic dependency"></div>
+					</div></div><p><br class="figure-break">
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch06.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch06.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch07.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;6.&nbsp;Migration to a Modular Application&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;7.&nbsp;Local-Variable Type Inference</td></tr></table></div></body></html>

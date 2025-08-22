@@ -1,0 +1,308 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;10.&nbsp;Language Enhancements</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch09s02.html" title="9.2.&nbsp; Implement decomposition and reduction with streams"><link rel="next" href="ch10s02.html" title="10.2.&nbsp; Develop code that handles multiple Exception types in a single catch block"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;10.&nbsp;Language Enhancements</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch09s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch10s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap10"></a>Chapter&nbsp;10.&nbsp;Language Enhancements</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c10s1"></a>10.1.&nbsp;
+					 Use try-with-resources construct
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#TRY_WITH_RESOURCE_TECHNOTE" title="The try-with-resources Statement">[TRY_WITH_RESOURCE_TECHNOTE]</a> The try-with-resources Statement
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					The <span class="bold"><strong>try-with-resources statement</strong></span> is a <code class="code">try</code> statement that
+					<span class="bold"><strong>declares</strong></span> one or more resources.
+				</p>
+				<p>
+					A resource is as an object that must be closed after the program is finished with it. The try-with-resources
+					statement ensures that each resource is closed at the end of the statement. Any object that implements <code class="code">java.lang.AutoCloseable</code>
+					can be used as a resource:
+					</p><pre class="programlisting">
+package java.lang;
+
+public interface AutoCloseable {
+    void close() throws Exception;
+}
+					</pre><p>
+					The <code class="code">java.io.Closeable</code> interface extends the <code class="code">java.lang.AutoCloseable</code> interface. The <code class="code">close()</code> 
+					method of the <code class="code">Closeable</code> interface throws exceptions of type <code class="code">IOException</code> while the <code class="code">close()</code> 
+					method of the <code class="code">AutoCloseable</code> interface throws exceptions of type <code class="code">Exception</code>. Consequently, subclasses 
+					of the <code class="code">AutoCloseable</code> interface can override this behavior of the <code class="code">close()</code> method to throw 
+					specialized exceptions, such as <code class="code">IOException</code>, or no exception at all.
+					</p><pre class="programlisting">
+package java.io;
+
+import java.io.IOException;
+
+public interface Closeable extends AutoCloseable {
+    public void close() throws IOException;
+}
+					</pre><p>
+				</p>
+				<p>
+					The following example reads the first line from a file. It uses an instance of <code class="code">BufferedReader</code> to read data from the file.
+					<code class="code">BufferedReader</code> is a resource that must be closed after the program is finished with it:
+					</p><pre class="programlisting">
+static String readFirstLineFromFile(String path) throws IOException {
+    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
+        return br.readLine();
+    }
+}
+					</pre><p>
+				</p>
+				<p>
+					In this example, the resource declared in the try-with-resources statement is a <code class="code">BufferedReader</code>. The declaration statement appears
+					within parentheses immediately after the <code class="code">try</code> keyword. The class <code class="code">BufferedReader</code>, in Java 7.0 and later, implements
+					the interface <code class="code">java.lang.AutoCloseable</code>. Because the <code class="code">BufferedReader</code> instance is declared in a try-with-resource
+					statement, it will be closed regardless of whether the <code class="code">try</code> statement completes normally or abruptly (as a result of the
+					method <code class="code">BufferedReader.readLine</code> throwing an <code class="code">IOException</code>).
+				</p>
+				<p>
+					Prior to Java 7.0, you can use a <code class="code">finally</code> block to ensure that a resource is closed regardless of whether  
+					the <code class="code">try</code> statement completes normally or abruptly. The following example uses a <code class="code">finally</code> block instead 
+					of a try-with-resources statement:
+					</p><pre class="programlisting">
+static String readFirstLineFromFileWithFinallyBlock(String path) throws IOException {
+    BufferedReader br = new BufferedReader(new FileReader(path));
+    try {
+        return br.readLine();
+    } finally {
+        if (br != null) br.close();
+    }
+}
+					</pre><p>
+					However, in this example, if the methods <code class="code">readLine</code> and <code class="code">close</code> both throw exceptions, then the method
+					<code class="code">readFirstLineFromFileWithFinallyBlock</code> throws the exception thrown from the <code class="code">finally</code> block; the
+					exception thrown from the <code class="code">try</code> block is suppressed. In contrast, in the example <code class="code">readFirstLineFromFile</code>,
+					if exceptions are thrown from both the <code class="code">try</code> block and the try-with-resources statement, then the method
+					<code class="code">readFirstLineFromFile</code> throws the exception thrown from the <code class="code">try</code> block; the exception thrown from the
+					try-with-resources block is suppressed. In Java SE 7 and later, you can retrieve suppressed exceptions; see the next section
+					for more information.
+				</p>
+				<p>
+					You may declare <span class="bold"><strong>one or more</strong></span> resources in a try-with-resources statement. The following example makes a
+					copy of a file, using the try-with-resources statement. There are two resources defined in the <code class="code">try</code> statement,
+					<span class="bold"><strong>separated by a semicolon</strong></span>, which are automatically closed when the statement completes:
+					</p><pre class="programlisting">
+public static void copyFile(String src, String dest) throws IOException  {
+    try (BufferedReader in = new BufferedReader(new FileReader(src));
+         BufferedWriter out = new BufferedWriter(new FileWriter(dest))) {
+        String line;
+        while((line = in.readLine()) != null) {
+            out.write(line);
+            out.write('\n');
+        }
+    } // No need to close resources in a "finally"
+}
+					</pre><p>
+				</p>
+				<p>
+					NOTE: the <code class="code">close()</code> methods of resources are called in the <span class="bold"><strong>OPPOSITE</strong></span>
+					order of their creation.
+				</p>
+				<p>
+					NOTE: in try-with-resource statement the <code class="code">catch</code> and the <code class="code">finally</code> blocks are
+					OPTIONAL.
+				</p>
+				<p>
+					In JDBC 4.1 the <code class="code">java.lang.AutoCloseable</code> interface is extended by the following interfaces:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">java.sql.Connection</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">java.sql.ResultSet</code>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">java.sql.Statement</code>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					The following example uses a try-with-resources statement to automatically close a <code class="code">java.sql.Statement</code> object:
+					</p><pre class="programlisting">
+public static void viewTable(Connection con) throws SQLException {
+    String query = "SELECT ... FROM ...";
+    try (Statement stmt = con.createStatement()) {
+        ResultSet rs = stmt.executeQuery(query);
+        while (rs.next()) {
+            // ...
+        }
+    } catch (SQLException e) {
+        // ...
+    }
+}
+					</pre><p>
+					The resource <code class="code">java.sql.Statement</code> used in this example is part of the JDBC 4.1 and later API.
+				</p>
+				<p>
+					NOTE: A try-with-resources statement CAN have <code class="code">catch</code> and <code class="code">finally</code> blocks just like an ordinary <code class="code">try</code>
+					statement. In a try-with-resources statement, any <code class="code">catch</code> or <code class="code">finally</code> block is run
+					<span class="bold"><strong>AFTER the resources declared have been closed</strong></span>.
+				</p>
+				<p>
+					<span class="bold"><strong>Making an Auto-Closeable Class</strong></span>
+				</p>
+				<p>
+					As you know, a try-with-resources statement cannot manage every class. A new interface called <code class="code">java.lang.AutoCloseable</code> was introduced
+					in Java 7.0. All it does is provide a void method named <code class="code">close()</code> that may throw a checked exception (<code class="code">java.lang.Exception</code>).
+					Any class willing to participate in try-with-resources statements should implement this interface. It is strongly recommended that implementing
+					classes and sub-interfaces declare a more precise exception type than <code class="code">java.lang.Exception</code>, or, even better, declare no exception type
+					at all if invoking <code class="code">close()</code> should not fail.
+				</p>
+				<p>
+					Such <code class="code">close()</code> methods have been retro-fitted into many classes of the standard Java SE run-time environment , including the
+					<code class="code">java.io</code>, <code class="code">java.nio</code>, <code class="code">javax.crypto</code>, <code class="code">java.security</code>, <code class="code">java.util.zip</code>, <code class="code">java.util.jar</code>,
+					<code class="code">javax.net</code>, and <code class="code">java.sql</code> packages. The major advantage of this approach is that existing code continues working just as
+					before, while new code can easily take advantage of the try-with-resources statement.
+				</p>
+				<p>
+					Consider the following example:
+					</p><pre class="programlisting">
+public class AutoCloseableResource <span class="bold"><strong>implements AutoCloseable</strong></span> {
+
+    @Override
+    <span class="bold"><strong>public void close()</strong></span> {
+        System.out.println("in close()");
+        throw new RuntimeException("Exception in close()");
+    }
+
+    public void work() throws Exception {
+        System.out.println("in work()");
+        throw new Exception("Exception in work()");
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+public class AutoCloseableTest {
+
+    public static void main(String[] args) {
+        try (AutoCloseableResource resource = new AutoCloseableResource()) {
+            resource.work();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+					</pre><p>
+					The <code class="code">AutoCloseableResource</code> class implements <code class="code">java.lang.AutoCloseable</code> and can thus be used as part of a try-with-resources
+					statement, as illustrated in the <code class="code">AutoCloseableTest.main(...)</code> method. Intentionally, we added some console output, and we throw
+					exceptions both in the <code class="code">work()</code> and close() methods of the class. Running the program yields the following output:
+					</p><pre class="programlisting">
+in work()
+in close()
+java.lang.Exception: Exception in work()
+	at AutoCloseableResource.work(AutoCloseableResource.java:21)
+	at AutoCloseableTest.main(AutoCloseableTest.java:15)
+	Suppressed: java.lang.RuntimeException: Exception in close()
+		at AutoCloseableResource.close(AutoCloseableResource.java:16)
+		at AutoCloseableTest.main(AutoCloseableTest.java:16)
+					</pre><p>
+				</p>
+				<p>
+					The output clearly proves that <code class="code">close()</code> was indeed called BEFORE entering the <code class="code">catch</code> block that should handle the
+					exception. Yet, the Java developer discovering Java 7.0 might be surprised to see the exception stack trace line prefixed by
+					"<code class="code">Suppressed: ...</code>". It matches the exception thrown by the <code class="code">close()</code> method, but you could never encounter
+					such a form of stack trace prior to Java 7.0.
+				</p>
+				<p>
+					<span class="bold"><strong>Suppressed Exceptions</strong></span>
+				</p>
+				<p>
+					If both the (explicit) <code class="code">try</code> block and the (implicit) resource handling code throw an exception, then the <code class="code">try</code> block
+					exception is the one which will be thrown. The resource handling exception will be made available via the <code class="code">Throwable.getSupressed()</code>
+					method of the thrown exception. The <code class="code">Throwable[] Throwable.getSupressed()</code> is a new method added to the <code class="code">Throwable</code>
+					class since Java SE 7 specifically for this purpose. If there were no suppressed exceptions then this will return an empty array.
+				</p>
+				<p>
+					The Java 7.0 extensions to <code class="code">java.lang.Throwable</code> are as follows:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">public final void addSuppressed(Throwable exception)</code> - appends a suppressed exception to another one, so
+								as to avoid exception masking.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">public final Throwable[] getSuppressed()</code> - gets the suppressed exceptions that were added to an exception.
+							</p>
+						</li></ul></div><p>
+					These extensions were introduced especially for supporting the try-with-resources statement and fixing exception-masking problems.
+				</p>
+				<p>
+					An exception can be thrown from the block of code associated with the try-with-resources statement. In the example <code class="code">copyFile</code> above,
+					an exception can be thrown from the <code class="code">try</code> block, and up to two exceptions can be thrown from the try-with-resources
+					statement when it tries to close the <code class="code">BufferedReader</code> and <code class="code">BufferedWriter</code> objects. If an exception is thrown from
+					the <code class="code">try</code> block and one or more exceptions are thrown from the try-with-resources statement, then those exceptions thrown
+					from the try-with-resources statement are SUPPRESSED, and the exception thrown by the <code class="code">try</code> block is the one that is thrown by
+					the <code class="code">copyFile</code> method. You can retrieve these suppressed exceptions by calling the <code class="code">Throwable.getSuppressed</code> method
+					from the exception thrown by the <code class="code">try</code> block.
+				</p>
+				<p>
+					<span class="bold"><strong>Improved try-with-resources statement</strong></span>
+				</p>
+				<p>
+					In Java 7.0 or Java 8.0 the <code class="code">AutoCloseable</code> resources must be declared and initialized inside the try block of 
+					try-with-resources statement:
+					</p><pre class="programlisting">
+File file = new File("hello.txt");
+try (BufferedReader br = new BufferedReader(new FileReader(file));) {
+    String s = br.readLine();
+    System.out.println(s);
+} 
+					</pre><p>
+					In Java 9.0 you are not required to declare new local variable and initialize it inside the try block. 
+					If you have a resource which is already declared and opened outside a try-with-resources statement, then 
+					you only can write the variable name pointing to resource inside try block and will be eligible for 
+					automatic resource management:
+					</p><pre class="programlisting">
+File file = new File("hello.txt");
+BufferedReader br = new BufferedReader(new FileReader(file)); // must be final or effectively final
+try (br) {
+    String s = br.readLine();
+    System.out.println(s);
+}
+					</pre><p>
+					</p><div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+						<p>
+							 The restriction is that the local variable which you refer inside try block 
+							 must be <span class="emphasis"><em>effectively final</em></span> or 
+							 explicitly declared with <code class="code">final</code> keyword.
+						</p>
+						<p>
+							 <span class="emphasis"><em>Effectively final</em></span> variable is a variable whose value is never 
+							 changed after it is initialized.
+						</p>
+					</td></tr></table></div><p>
+				</p>
+				<p>
+					In Java 10 you can use <code class="code">var</code> reserved type name for resource variable declaration:
+					</p><pre class="programlisting">
+File file = new File("hello.txt");
+try (var br = new BufferedReader(new FileReader(file));) {
+    String s = br.readLine();
+    System.out.println(s);
+}					
+					</pre><p>
+					or:
+					</p><pre class="programlisting">
+File file = new File("hello.txt");
+var br = new BufferedReader(new FileReader(file));
+try (br) {
+    String s = br.readLine();
+    System.out.println(s);
+}
+					</pre><p>					
+				</p>
+			</div>
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch10s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">9.2.&nbsp;
+					Implement decomposition and reduction with streams
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;10.2.&nbsp;
+					Develop code that handles multiple Exception types in a single catch block
+				</td></tr></table></div></body></html>

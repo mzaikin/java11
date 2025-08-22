@@ -1,0 +1,218 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>3.2.&nbsp; Define and write functional interfaces</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Java Interfaces"><link rel="prev" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Java Interfaces"><link rel="next" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.2.&nbsp;
+					Define and write functional interfaces
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;3.&nbsp;Java Interfaces</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c3s2"></a>3.2.&nbsp;
+					Define and write functional interfaces
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>								
+								<a class="xref" href="bi01.html#JAVA_UTIL_FUNCTION" title="Java SE 11 Java Doc - Package java.util.function">[JAVA_UTIL_FUNCTION]</a> Java SE 11 Java Doc - Package java.util.function 
+							</p>
+							<p>								
+								<a class="xref" href="bi01.html#JLS_11" title="The Java&reg; Language Specification. Java SE 11 Edition">[JLS_11]</a> 9.8. Functional Interfaces 
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Functional interfaces</strong></span> provide target types for lambda expressions and
+					method references. Each functional interface has a <span class="bold"><strong>single abstract method</strong></span> (SAM),
+					called the <span class="bold"><strong>functional method</strong></span> for that functional interface, to which
+					the lambda expression's parameter and return types are matched or adapted.
+				</p>
+				<p>
+					Functional interfaces can provide a target type in multiple contexts, such as assignment context, method invocation, or cast context:
+					</p><pre class="programlisting">
+// Assignment context
+Predicate&lt;String&gt; p = String::isEmpty;					
+					</pre><p>
+					</p><pre class="programlisting">
+// Method invocation context
+stream.filter(e -&gt; e.getSize() &gt; 10)...
+					</pre><p>
+					</p><pre class="programlisting">
+// Cast context
+stream.map((ToIntFunction) e -&gt; e.getSize())...
+					</pre><p>
+				</p>
+				<p>
+					All the existing single method interfaces like <code class="code">Runnable</code>, <code class="code">Callable</code>, 
+					<code class="code">Comparator</code>, and <code class="code">ActionListener</code> as of Java 8.0 (and later) are functional interfaces and
+					lambdas can be used anywhere a single abstract method interface is used.
+				</p>
+				<p>
+					<span class="bold"><strong>@FunctionalInterface annotation</strong></span>
+				</p>
+				<p>
+					Java 8.0 have introduced a new annotation <code class="code">@FunctionalInterface</code> to mark an interface as
+					such. It's basically to communicate intent but also allows the compiler to do some additional checks.
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						The <code class="code">@FunctionalInterface</code> annotation is optional, it is a "hint" for Java compiler.
+					</p>
+				</td></tr></table></div>
+				<p>
+					For example, this interface compiles successfully:
+					</p><pre class="programlisting">
+public interface MyInterface {
+}
+					</pre><p>
+				</p>
+				<p>
+					But when you indicate that it should be a <span class="bold"><strong>functional interface</strong></span>:
+					</p><pre class="programlisting">
+// Compilation fails !
+@FunctionalInterface
+public interface MyInterface {
+}
+					</pre><p>
+					The compiler will raise an error as there is no abstract method. It says that "<code class="code">MyInterface</code> is
+					not a functional interface" as "no abstract method was found". It will also
+					error if we try and add a second method:
+					</p><pre class="programlisting">
+// Compilation fails !
+@FunctionalInterface
+public interface MyInterface {
+    void doIt();
+    void doItNow();
+}
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Default methods in interfaces</strong></span>
+				</p>
+				<p>
+					Since Java 8.0 interfaces support <code class="code">default</code> and <code class="code">public static</code> methods. A default method is an instance method
+					defined in an interface whose method header begins with the <code class="code">default</code> keyword; it
+					also provides a <span class="bold"><strong>code body</strong></span>. Every class that implements the interface
+					inherits the interface's default methods and can override them.
+				</p>
+				<p>
+					Since functional interface requires a single <span class="bold"><strong>abstract</strong></span> method, this code will NOT
+					compile, as it is invalid functional interface:
+					</p><pre class="programlisting">
+// Compilation fails !
+@FunctionalInterface
+public interface MyDefInterface {
+    default void doIt() { /* cool implementation */ }
+}
+					</pre><p>
+					But this functional interface will compile successfully:
+					</p><pre class="programlisting">
+@FunctionalInterface
+public interface MyDefInterface {
+    default void doIt() { /* cool implementation */ }
+    void doItNow(); // Single Abstract Method (SAM)
+}
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Static methods in interfaces</strong></span>
+				</p>
+				<p>
+					A static method is a method that's associated with the class in which it's defined, rather than with any
+					object created from that class. Every instance of the class shares the static methods of the class. Java
+					since release 8.0 also lets <code class="code">public static</code> methods be defined in interfaces where they can 
+					assist <code class="code">default</code> methods.
+				</p>
+				<p>
+					Like static methods in classes, you specify that a method definition in an interface is a
+					static method with the <code class="code">static</code> keyword at the beginning of the method signature. All method
+					declarations in an interface, including static methods, are implicitly <code class="code">public</code>, so you can omit the
+					<code class="code">public</code> modifier.
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+ 						Since Java 9.0 onwards you can <span class="emphasis"><em>explicitly</em></span> provide 
+ 						<code class="code">private</code> modifier for <code class="code">static</code> methods in interfaces.
+					</p>
+				</td></tr></table></div>
+				<p>
+					When you implement an interface that contains a static method, the static method is still part of the
+					interface and not part of the implementing class. For this reason, you cannot prefix the method with the
+					class name. Instead, you must prefix the method with the interface name.
+				</p>
+				<p>
+					Since functional interface requires a single <span class="bold"><strong>abstract</strong></span> method, this code will NOT
+					compile, as it is invalid functional interface:
+					</p><pre class="programlisting">
+// Compilation fails !
+@FunctionalInterface
+public interface MyStatInterface {
+    static void doIt() { /* cool implementation */ }
+}
+					</pre><p>
+					But this functional interface will compile successfully:
+					</p><pre class="programlisting">
+@FunctionalInterface
+public interface MyStatInterface {
+    static void doIt() { /* cool implementation */ }
+    void doItNow();
+}
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Public methods of java.lang.Object in functional interfaces</strong></span>
+				</p>
+				<p>
+					If an interface declares an abstract method overriding one of the <code class="code">public</code> methods of
+					<code class="code">java.lang.Object</code>, that also DOES NOT count toward the interface's <code class="code">abstract</code>
+					method count since any implementation of the interface will have an implementation from
+					<code class="code">java.lang.Object</code> or elsewhere.
+				</p>
+				<p>
+					For example, <code class="code">java.util.Comparator</code> is a functional interface even though it declared two
+					<code class="code">abstract</code> methods:
+					</p><pre class="programlisting">
+
+package java.util;
+
+@FunctionalInterface
+public interface Comparator&lt;T&gt; {
+
+    int compare(T o1, T o2); // This is SAM
+
+    boolean equals(Object obj); // ignored as it's a public method from java.lang.Object
+
+    ...
+}
+
+					</pre><p>
+					The reason is because one of these abstract methods - <code class="code">equals()</code> -- has signature identical to
+					<code class="code">public</code> method in <code class="code">java.lang.Object</code> class:
+					</p><pre class="programlisting">
+public class Object {
+    ...
+    public boolean equals(Object obj) {
+        return (this == obj);
+    }
+    ...
+}
+					
+					</pre><p>
+				</p>
+				<p>
+					This is NOT a funtional interface:
+					</p><pre class="programlisting">
+// Compilation fails !
+@FunctionalInterface
+interface MyInterface {
+    int doIt(); 
+    Object clone(); // not ignored, as it's not a public (but protected) method from java.lang.Object
+}
+					</pre><p>
+					Although only <code class="code">doIt()</code> is an abstract method which is not part of the <code class="code">java.lang.Object</code>, 
+					the interface is not functional, as <code class="code">clone()</code> method is not <code class="code">public</code> in the <code class="code">Object</code> class:
+					</p><pre class="programlisting">
+public class Object {
+    ...
+    @HotSpotIntrinsicCandidate
+    protected native Object clone() throws CloneNotSupportedException;
+    ...
+}
+					</pre><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch03.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;3.&nbsp;Java Interfaces&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</td></tr></table></div></body></html>

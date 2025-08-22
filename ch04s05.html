@@ -1,0 +1,239 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>4.5.&nbsp; Sort a collection using lambda expressions</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"><link rel="prev" href="ch04s04.html" title="4.4.&nbsp; Perform calculations using count, max, min, average and sum stream operations"><link rel="next" href="ch04s06.html" title="4.6.&nbsp; Use Collectors with streams, including the groupingBy and partitioningBy operation"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.5.&nbsp;
+					Sort a collection using lambda expressions
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch04s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c4s5"></a>4.5.&nbsp;
+					Sort a collection using lambda expressions
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Sorting a <code class="code">Stream</code></strong></span>
+				</p>
+				<p>
+					Java streams API has several sorting methods.
+				</p>
+				<p>
+					Below example shows the stream of employees is mapped to the employee names and then there is a <code class="code">sorted()</code>
+					method, which returns the sorted stream of employee names. Remember, the <code class="code">Stream.sorted()</code> 
+					is a <span class="emphasis"><em>stateful intermediate operation</em></span> which  
+					does not take any parameter here, and hence it will sort the list in natural order.
+				</p>
+				<p>
+					</p><pre class="programlisting">
+public class Employee {
+    public String name;
+
+    public Employee(String n) {
+        name = n;
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("John"), new Employee("Jane"), new Employee("Jack"));
+List&lt;String&gt; sl = emps
+    .map(e -&gt; e.name)
+    .sorted()
+    .collect(Collectors.toList());
+System.out.print(sl);
+
+					</pre><p>
+					Output:
+					</p><pre class="programlisting">
+[Jack, Jane, John]
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						The <code class="code">Stream.sorted()</code> method without parameters requires a stream of <code class="code">Comparable</code> elements!
+					</p>
+					<p>
+						If the elements of this stream are not <code class="code">Comparable</code>, a <code class="code">java.lang.ClassCastException</code> may be thrown
+						when the terminal operation is executed.
+					</p>
+					<p>
+						For ordered streams, the sort is stable. For unordered streams, no stability guarantees are made.
+					</p>
+					
+				</td></tr></table></div>
+				<p>
+					We can use our own sorting logic by calling <code class="code">Stream.sorted(...)</code> intermediate operation 
+					and passing a <code class="code">Comparator</code> interface as a parameter. The <code class="code">comparing(...)</code> and few other
+					useful <code class="code">static</code> and <code class="code">default</code> methods have been added to the 
+					<code class="code">java.util.Comparator</code> interface in Java 8.0 to simplify these scenarios.
+				</p>
+				<p>
+					Here is an example how the	<code class="code">Comparator.comparing(...)</code> method is used to provide a custom 
+					sorting logic (e.g. when elements do not implement <code class="code">java.lang.Comparable</code> interface or when the same 
+					elements need to be sorted by different algorithms).
+					</p><pre class="programlisting">
+public class Employee {
+    public String name;
+
+    public Employee(String n) {
+        name = n;
+    }
+    
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}
+					</pre><p>
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("Nathaniel"), new Employee("Steve"), new Employee("Nick"));
+List&lt;Employee&gt; sl = emps
+    .sorted(Comparator.comparing(e -&gt; e.name.length()))
+    .collect(Collectors.toList());
+System.out.print(sl);
+
+					</pre><p>
+					The output of the above code is employee list in sorted by name length order:
+					</p><pre class="programlisting">
+[Nick, Steve, Nathaniel]
+					</pre><p>
+				</p>
+				<p>
+					<code class="code">Comparator.thenComparing(...)</code> is a <code class="code">default</code> method of the <code class="code">Comparator</code> interface
+					introduced in Java 8.0. If we have two <code class="code">Comparator</code> interface instances, and we want to do a
+					sorting by composite condition (by first comparator and then by second comparator), we can use both
+					comparators invoking <code class="code">thenComparing(...)</code> on first instance and passing in the second instance.
+					Find the example below:
+					</p><pre class="programlisting">
+
+Stream&lt;Employee&gt; emps = Stream.of(
+    new Employee("Nathaniel"), new Employee("Jane"),
+    new Employee("Steve"), new Employee("Nick"),
+    new Employee("Jack"));
+
+Comparator&lt;Employee&gt; c1 = Comparator.comparing(e -&gt; e.name.length());
+Comparator&lt;Employee&gt; c2 = (e1, e2) -&gt; e1.name.compareTo(e2.name);
+
+List&lt;Employee&gt; sl = emps
+    .sorted(c1.thenComparing(c2))
+    .collect(Collectors.toList());
+System.out.println(sl);
+
+					</pre><p>
+					The output of the above code is employee list in sorted by name length order, and in case name lengths
+					are equal, such employees are sorted by name alphabetical order:
+					</p><pre class="programlisting">
+[Jack, Jane, Nick, Steve, Nathaniel]
+					</pre><p>
+				</p>
+				<p>
+					You can sort a stream in the reverse order by preparing a simple <code class="code">Comparator</code> instance for 
+					the sort and then calling <code class="code">reversed()</code> method on it to get the reversed 
+					version of that <code class="code">Comparator</code>:
+					</p><pre class="programlisting">
+
+Comparator&lt;Employee&gt; byNameLengthDesc = Comparator.comparing((Employee e) -&gt; e.name.length()).reversed();
+Stream&lt;Employee&gt; emps = Stream.of(new Employee("Nathaniel"), new Employee("Steve"), new Employee("Nick"));
+List&lt;Employee&gt; sl = emps
+    .sorted(byNameLengthDesc)
+    .collect(Collectors.toList());
+System.out.print(sl);
+					
+					</pre><p>
+					</p><pre class="programlisting">
+[Nathaniel, Steve, Nick]
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Sorting a <code class="code">List</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">java.util.Collections.sort(...)</code> method sorts the specified <code class="code">List</code> into ascending order, 
+					according to the natural ordering of its elements. All elements in the list must implement the 
+					<code class="code">Comparable</code> interface. Furthermore, all elements in the list must be mutually comparable:
+					</p><pre class="programlisting">
+
+List&lt;String&gt; emps = new ArrayList&lt;&gt;();
+emps.add("Nathaniel"); emps.add("Steve"); emps.add("Nick");
+Collections.sort(emps);
+System.out.print(emps);
+					
+					</pre><p>
+					</p><pre class="programlisting">
+[Nathaniel, Nick, Steve]
+					</pre><p>
+				</p>
+				<div class="warning" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Warning"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Warning]" src="images.admon/warning.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						If you initialize a list like this, it will fail at runtime, as the factory method creates <span class="bold"><strong>immutable</strong></span> 
+						list object and sorting modifies exactly the same list object:
+						</p><pre class="programlisting">
+
+List&lt;String&gt; emps = List.of("Nathaniel", "Steve","Nick");
+						
+						</pre><p> 
+					</p>
+				</td></tr></table></div>
+				<p>
+					If the objects in the list do not implement <code class="code">Comparable</code>, you should provide your custom 
+					<code class="code">Comparator</code>:
+					</p><pre class="programlisting">
+
+List&lt;Employee&gt; emps = new ArrayList&lt;&gt;();        
+emps.add(new Employee("Nathaniel"));
+emps.add(new Employee("Steve")); 
+emps.add(new Employee("Nick"));
+Comparator&lt;Employee&gt; c = (e1, e2) -&gt; e1.name.compareTo(e2.name);
+Collections.sort(emps, c);
+System.out.print(emps);
+					
+					</pre><p>
+					</p><pre class="programlisting">
+[Nathaniel, Nick, Steve]
+					</pre><p>
+				</p>
+				<p>
+					Or the same logic by using <code class="code">Comparator.comparing(...)</code> method:
+					</p><pre class="programlisting">
+
+Comparator&lt;Employee&gt; c = Comparator.comparing(e -&gt; e.name);
+
+					</pre><p>
+					Or using method reference syntax (assume <code class="code">Employee</code> has <code class="code">String getName()</code> method which 
+					returns <code class="code">name</code>):
+					</p><pre class="programlisting">
+
+Comparator&lt;Employee&gt; c = Comparator.comparing(Employee::getName);
+
+					</pre><p>
+				</p>
+				<p>
+					As of Java 8.0 the <code class="code">java.util.List</code> interface has <code class="code">default void sort(Comparator&lt;? super E&gt; c)</code> method which 
+					can sort own elements:
+					</p><pre class="programlisting">
+
+List&lt;Employee&gt; emps = new ArrayList&lt;&gt;();        
+emps.add(new Employee("Nathaniel"));
+emps.add(new Employee("Steve")); 
+emps.add(new Employee("Nick"));
+Comparator&lt;Employee&gt; c = Comparator.comparing(Employee::getName);
+emps.sort(c);
+System.out.print(emps);
+					
+					</pre><p>
+					</p><pre class="programlisting">
+[Nathaniel, Nick, Steve]
+					</pre><p>			
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s04.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch04s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.4.&nbsp;
+					 Perform calculations using <code class="code">count</code>, <code class="code">max</code>, <code class="code">min</code>, <code class="code">average</code> and <code class="code">sum</code> stream operations
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;4.6.&nbsp;
+					Use <code class="code">Collectors</code> with streams, including the <code class="code">groupingBy</code> and <code class="code">partitioningBy</code> operation
+				</td></tr></table></div></body></html>

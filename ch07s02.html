@@ -1,0 +1,76 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>7.2.&nbsp; Create and use lambda expressions with local-variable type inferred parameters</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch07.html" title="Chapter&nbsp;7.&nbsp;Local-Variable Type Inference"><link rel="prev" href="ch07.html" title="Chapter&nbsp;7.&nbsp;Local-Variable Type Inference"><link rel="next" href="ch08.html" title="Chapter&nbsp;8.&nbsp;Lambda Expressions"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">7.2.&nbsp;
+					Create and use lambda expressions with local-variable type inferred parameters
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch07.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;7.&nbsp;Local-Variable Type Inference</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch08.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c7s2"></a>7.2.&nbsp;
+					Create and use lambda expressions with local-variable type inferred parameters
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JEP_323" title="JEP 323: Local-Variable Syntax for Lambda Parameters">[JEP_323]</a> JEP 323: Local-Variable Syntax for Lambda Parameters
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					From Java 11 you can use the <code class="code">var</code> reserved type name as lambda expression parameter type:
+					</p><pre class="programlisting">
+					
+UnaryOperator&lt;String&gt; lc = (var s) -&gt; s.toLowerCase();
+
+					</pre><p>
+					The type of the parameter declared with the <code class="code">var</code>  above will be inferred 
+					to the type <code class="code">String</code>, because the type declaration of the variable has its 
+					generic type set to UnaryOperator&lt;String&gt;, which means that the parameter type and 
+					return type of the <code class="code">UnaryOperator</code> is <code class="code">String</code>.
+				</p>
+				<p>
+					<span class="bold"><strong>Legal lambda expression type inferrence usage</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Enables you to add annotations to lambda parameters:
+								</p><pre class="programlisting">
+					
+UnaryOperator&lt;String&gt; lc = (@NonNull var s) -&gt; s.toLowerCase();
+
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Illegal lambda expression type inferrence usage</strong></span>
+				</p>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Not allowed to use <code class="code">var</code> for some parameter and skip for other:
+								</p><pre class="programlisting">
+					
+BiFunction&lt;String, String, String&gt; lc = (var a, b) -&gt; a + b;
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed to mix <code class="code">var</code>  with explicit type:
+								</p><pre class="programlisting">
+					
+BiFunction&lt;String, String, String&gt; lc = (var a, String b) -&gt; a + b;
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								Not allowed to skip parentheses in single parameter lambda while using <code class="code">var</code>:
+								</p><pre class="programlisting">
+					
+UnaryOperator&lt;String&gt; unaryOp = var s -&gt; s.toLowerCase();
+
+								</pre><p>
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch07.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch07.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch08.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;7.&nbsp;Local-Variable Type Inference&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;8.&nbsp;Lambda Expressions</td></tr></table></div></body></html>

@@ -1,0 +1,90 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><meta name="description" content="The purpose of this document is to help in preparation for Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Test (Exam 1Z0-817). This document should not be used as the only study material for Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Test (Exam 1Z0-817). It might cover not all objective topics, and it might be not enough. I tried to make this document as much accurate as possible, but if you find any error, please let me know."><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="next" href="pr01.html" title="Preface"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide</th></tr><tr><td width="20%" align="left">&nbsp;</td><th width="60%" align="center">&nbsp;</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="pr01.html">Next</a></td></tr></table><hr></div><div lang="en" class="book"><div class="titlepage"><div><div><h1 class="title"><a name="ocpjd11-upgrade-guide"></a>Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide</h1></div><div><div class="authorgroup">
+			<div class="author"><h3 class="author"><span class="firstname">Mikalai</span> <span class="surname">Zaikin</span></h3><div class="affiliation">
+					<div class="address"><p><br>
+<span class="country">Lithuania</span><br>
+<span class="city">Vilnius</span><br>
+<code class="email">&lt;<a class="email" href="mailto:mzaikin[at]gmail.com">mzaikin[at]gmail.com</a>&gt;</code><br>
+					</p></div>
+				</div></div>
+		</div></div><div><p class="copyright">Copyright &copy; 2020-2025 Mikalai Zaikin</p></div><div><div class="legalnotice"><a name="d5e14"></a>
+			<p>Redistribution of this document is permitted as long as it is not used for profits.</p>
+		</div></div><div><p class="pubdate">August 2025</p></div><div><div class="revhistory"><table style="border-style:solid; width:100%;" summary="Revision History"><tr><th align="left" valign="top" colspan="3"><b>Revision History</b></th></tr>
+			<tr><td align="left">Revision commit c70f2e92d6f055a7fed923a69867a2c8e824347d</td><td align="left">Date:   Fri Aug 22 17:34:19 2025 +0300</td><td align="left">Author: Mikalai Zaikin &lt;mzaikin@ibagroup.eu&gt;</td></tr><tr><td align="left" colspan="3"><p>Updated Git format</p></td></tr>
+			<tr><td align="left">Revision commit a188eec75b9b09436656d60791b7f30273e2f581</td><td align="left">Date:   Fri Aug 22 16:35:38 2025 +0300</td><td align="left">Author: Mikalai Zaikin &lt;mzaikin@ibagroup.eu&gt;</td></tr><tr><td align="left" colspan="3"><p>Minor updates</p></td></tr>
+			<tr><td align="left">Revision commit 5c2adf3a8592b86b5f5ada9f2bebaed78bb41851</td><td align="left">Date:   Fri Aug 22 16:19:54 2025 +0300</td><td align="left">Author: Mikalai Zaikin &lt;mzaikin@ibagroup.eu&gt;</td></tr><tr><td align="left" colspan="3"><p>Added libs</p></td></tr>
+		</table></div></div><div><div class="abstract"><p class="title"><b>Abstract</b></p>
+			<p>
+				The purpose of this document is to help in preparation for Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Test (Exam 1Z0-817).
+			</p>
+			<p>
+				This document should not be used as the only study material for Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Test
+				(Exam 1Z0-817). It might cover not all objective topics, and it might be not
+				enough. I tried to make this document as much accurate as  possible, but if you find any error, please let
+				<a class="ulink" href="mailto:mzaikin@gmail.com?subject=Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Guide Comment" target="_top">me</a> know.
+			</p>
+		</div></div></div><hr></div><div class="toc"><dl class="toc"><dt><span class="preface"><a href="pr01.html">Preface</a></span></dt><dt><span class="part"><a href="pt01.html">I. Exam Objectives</a></span></dt><dd><dl><dt><span class="chapter"><a href="ch01.html">1. Understanding Modules</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch01.html#c1s1">1.1. 
+					 Describe the Modular JDK
+				</a></span></dt><dt><span class="sect1"><a href="ch01s02.html">1.2. 
+					 Declare modules and enable access between modules
+				</a></span></dt><dt><span class="sect1"><a href="ch01s03.html">1.3. 
+					   Describe how a modular project is compiled and run
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch02.html">2. Services in a Modular Application</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch02.html#c2s1">2.1. 
+					  Describe the components of Services including directives
+				</a></span></dt><dt><span class="sect1"><a href="ch02s02.html">2.2. 
+					Design a service type, load the services using <code class="code">ServiceLoader</code>, check for dependencies 
+					of the services including consumer module and provider module
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch03.html">3. Java Interfaces</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch03.html#c3s1">3.1. 
+					 Create and use methods in interfaces
+				</a></span></dt><dt><span class="sect1"><a href="ch03s02.html">3.2. 
+					Define and write functional interfaces
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch04.html">4. Lambda Operations on Streams</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch04.html#c4s1">4.1. 
+					 Extract stream data using <code class="code">map</code>, <code class="code">peek</code>, and <code class="code">flatMap</code> methods
+				</a></span></dt><dt><span class="sect1"><a href="ch04s02.html">4.2. 
+					Search stream data using search <code class="code">findFirst</code>, <code class="code">findAny</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code> and 
+					<code class="code">noneMatch</code> methods
+				</a></span></dt><dt><span class="sect1"><a href="ch04s03.html">4.3. 
+					 Use the <code class="code">Optional</code> class
+				</a></span></dt><dt><span class="sect1"><a href="ch04s04.html">4.4. 
+					 Perform calculations using <code class="code">count</code>, <code class="code">max</code>, <code class="code">min</code>, <code class="code">average</code> and <code class="code">sum</code> stream operations
+				</a></span></dt><dt><span class="sect1"><a href="ch04s05.html">4.5. 
+					Sort a collection using lambda expressions
+				</a></span></dt><dt><span class="sect1"><a href="ch04s06.html">4.6. 
+					Use <code class="code">Collectors</code> with streams, including the <code class="code">groupingBy</code> and <code class="code">partitioningBy</code> operation
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch05.html">5. Java File I/O (NIO.2)</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch05.html#c5s1">5.1. 
+					Use <code class="code">Path</code> interface to operate on file and directory paths
+				</a></span></dt><dt><span class="sect1"><a href="ch05s02.html">5.2. 
+					 Use <code class="code">Files</code> class to check, delete, copy or move a file or directory
+				</a></span></dt><dt><span class="sect1"><a href="ch05s03.html">5.3. 
+					 Use Stream API with <code class="code">Files</code>
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch06.html">6. Migration to a Modular Application</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch06.html#c6s1">6.1. 
+					 Migrate the application developed using a Java version prior to SE 9 to SE 11 including top-down and bottom-up migration, splitting a Java SE 8 application into modules for migration
+				</a></span></dt><dt><span class="sect1"><a href="ch06s02.html">6.2. 
+					Use <code class="code">jdeps</code> to determine dependencies and identify way to address the cyclic dependencies
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch07.html">7. Local-Variable Type Inference</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch07.html#c7s1">7.1. 
+					  Use local-variable type inference
+				</a></span></dt><dt><span class="sect1"><a href="ch07s02.html">7.2. 
+					Create and use lambda expressions with local-variable type inferred parameters
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch08.html">8. Lambda Expressions</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch08.html#c8s1">8.1. 
+					 Create and use lambda expressions
+				</a></span></dt><dt><span class="sect1"><a href="ch08s02.html">8.2. 
+					Use lambda expressions and method references
+				</a></span></dt><dt><span class="sect1"><a href="ch08s03.html">8.3. 
+					Use built-in functional interfaces including <code class="code">Predicate</code>, <code class="code">Consumer</code>, <code class="code">Function</code>, and <code class="code">Supplier</code>
+				</a></span></dt><dt><span class="sect1"><a href="ch08s04.html">8.4. 
+					Use primitive and binary variations of base interfaces of <code class="code">java.util.function</code> package
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch09.html">9. Parallel Streams</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch09.html#c9s1">9.1. 
+					 Develop the code that use parallel streams
+				</a></span></dt><dt><span class="sect1"><a href="ch09s02.html">9.2. 
+					Implement decomposition and reduction with streams
+				</a></span></dt></dl></dd><dt><span class="chapter"><a href="ch10.html">10. Language Enhancements</a></span></dt><dd><dl><dt><span class="sect1"><a href="ch10.html#c10s1">10.1. 
+					 Use try-with-resources construct
+				</a></span></dt><dt><span class="sect1"><a href="ch10s02.html">10.2. 
+					Develop code that handles multiple Exception types in a single catch block
+				</a></span></dt></dl></dd><dt><span class="bibliography"><a href="bi01.html">Bibliography</a></span></dt></dl></dd><dt><span class="part"><a href="pt02.html">II. Appendixes</a></span></dt><dd><dl><dt><span class="appendix"><a href="apa.html">1. Additional materials</a></span></dt><dd><dl><dt><span class="section"><a href="apa.html#a1s1">1.1. How to build JDK module graph</a></span></dt></dl></dd></dl></dd></dl></div>	
+	
+	
+	
+		
+</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left">&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right">&nbsp;<a accesskey="n" href="pr01.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">&nbsp;</td><td width="20%" align="center">&nbsp;</td><td width="40%" align="right" valign="top">&nbsp;Preface</td></tr></table></div></body></html>

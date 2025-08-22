@@ -1,0 +1,121 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;9.&nbsp;Parallel Streams</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="ch08s04.html" title="8.4.&nbsp; Use primitive and binary variations of base interfaces of java.util.function package"><link rel="next" href="ch09s02.html" title="9.2.&nbsp; Implement decomposition and reduction with streams"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;9.&nbsp;Parallel Streams</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s04.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch09s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap9"></a>Chapter&nbsp;9.&nbsp;Parallel Streams</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c9s1"></a>9.1.&nbsp;
+					 Develop the code that use parallel streams
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8. Section 14. Parallel Streams.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Parallel Streams</strong></span>
+				</p>
+				<p>
+					Streams can be sequential or parallel. Operations on a sequential stream are processed in serial using one thread.
+					Operations on a parallel stream are processed in parallel using multiple threads. You do not need to take additional
+					steps to process streams because they are sequential or parallel. All you need to do is call the appropriate method that
+					produces sequential or parallel stream. Everything else is taken care of by the Streams API
+				</p>
+				<p>
+					Most of the methods in the Streams API produce sequential streams by default. To produce a parallel stream
+					from a collection such as a <code class="code">List</code> or a <code class="code">Set</code>, you need to call the
+					<code class="code">parallelStream()</code> method of the <code class="code">Collection</code> interface.
+				</p>
+				<p>
+					Use the <code class="code">parallel()</code> method on a stream to convert a sequential stream into a parallel stream. Conversely, use the
+					<code class="code">sequential()</code> method on a stream to convert a parallel stream into a sequential stream.
+				</p>
+				<p>
+					The following snippet of code shows serial processing of the stream pipeline because the stream is sequential:
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; listOfIntegers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+
+System.out.println("Sequential Stream: ");
+listOfIntegers
+    .stream()
+    .forEach(e -&gt; System.out.print(e + " "));
+
+					</pre><p>
+					output is:
+					</p><pre class="programlisting">
+Sequential Stream:
+1 2 3 4 5 6 7 8
+					</pre><p>
+				</p>
+				<p>
+					The following snippet of code shows parallel processing of the stream pipeline because the stream is parallel:
+					</p><pre class="programlisting">
+
+List&lt;Integer&gt; listOfIntegers = List.of(1, 2, 3, 4, 5, 6, 7, 8);
+
+System.out.println("Parallel Stream: ");
+listOfIntegers
+    .stream()
+    .parallel()
+    .forEach(e -&gt; System.out.print(e + " "));
+
+					</pre><p>
+					output is (every time new order):
+					</p><pre class="programlisting">
+Parallel Stream:
+6 5 7 4 2 1 8 3
+					</pre><p>
+					You could also use this code:
+					</p><pre class="programlisting">
+...
+listOfIntegers
+    .parallelStream()
+    .forEach(e -&gt; System.out.print(e + " "));
+...
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Besides being <span class="emphasis"><em>parallel</em></span> or <span class="emphasis"><em>sequential</em></span>, a stream also can be 
+						<span class="emphasis"><em>ordered</em></span> or <span class="emphasis"><em>unordered</em></span>.
+					</p>
+				</td></tr></table></div>
+				<p>
+					Streams may or may not have a defined <span class="bold"><strong>encounter order</strong></span>. Whether or not a stream has an encounter order 
+					depends on the source and the intermediate operations. Certain stream sources (such as <code class="code">List</code> or arrays) are 
+					intrinsically ordered, whereas others (such as HashSet) are not. Some intermediate operations, such as <code class="code">sorted()</code>, 
+					may impose an encounter order on an otherwise unordered stream, and others may render an ordered stream unordered, 
+					such as <code class="code">BaseStream.unordered()</code>. Further, some terminal operations may ignore encounter order, such as 
+					<code class="code">forEach()</code>.
+				</p>
+				<p>
+					If a stream is ordered, most operations are constrained to operate on the elements in their encounter order; if 
+					the source of a stream is a <code class="code">List</code> containing <code class="code">[1, 2, 3]</code>, then the result of executing 
+					<code class="code">map(x -&gt; x*2)</code> must be <code class="code">[2, 4, 6]</code>. However, if the source has no defined encounter order, 
+					then any permutation of the values <code class="code">[2, 4, 6]</code> would be a valid result.
+				</p>
+				<p>
+					For sequential streams, the presence or absence of an encounter order does not affect performance, only determinism. 
+					If a stream is ordered, repeated execution of identical stream pipelines on an identical source will produce an 
+					identical result; if it is not ordered, repeated execution might produce different results.
+				</p>
+				<p>
+					For parallel streams, relaxing the ordering constraint can sometimes enable more efficient execution. Certain 
+					aggregate operations, such as filtering duplicates (<code class="code">distinct()</code>) or grouped reductions 
+					(<code class="code">Collectors.groupingBy()</code>) can be implemented more efficiently if ordering of elements is not 
+					relevant. Similarly, operations that are intrinsically tied to encounter order, such as <code class="code">limit()</code>, 
+					may require buffering to ensure proper ordering, undermining the benefit of parallelism. In cases where the stream 
+					has an encounter order, but the user does not particularly care about that encounter order, explicitly 
+					de-ordering the stream with <code class="code">unordered()</code> may improve parallel performance for some stateful or 
+					terminal operations. However, most stream pipelines, such as the "sum of weight of blocks" example above, 
+					still parallelize efficiently even under ordering constraints.
+				</p>
+			</div>
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch08s04.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch09s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.4.&nbsp;
+					Use primitive and binary variations of base interfaces of <code class="code">java.util.function</code> package
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;9.2.&nbsp;
+					Implement decomposition and reduction with streams
+				</td></tr></table></div></body></html>

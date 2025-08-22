@@ -1,0 +1,229 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>2.2.&nbsp; Design a service type, load the services using ServiceLoader, check for dependencies of the services including consumer module and provider module</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Services in a Modular Application"><link rel="prev" href="ch02.html" title="Chapter&nbsp;2.&nbsp;Services in a Modular Application"><link rel="next" href="ch03.html" title="Chapter&nbsp;3.&nbsp;Java Interfaces"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">2.2.&nbsp;
+					Design a service type, load the services using <code class="code">ServiceLoader</code>, check for dependencies 
+					of the services including consumer module and provider module
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;2.&nbsp;Services in a Modular Application</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c2s2"></a>2.2.&nbsp;
+					Design a service type, load the services using <code class="code">ServiceLoader</code>, check for dependencies 
+					of the services including consumer module and provider module
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#SERVICE_LOADER_JAVA_DOC" title="ServiceLoader JavaDoc">[SERVICE_LOADER_JAVA_DOC]</a> ServiceLoader JavaDoc
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					<span class="bold"><strong>Designing services</strong></span>
+				</p>
+				<p>
+					A service is a single type, usually an interface or abstract class. A concrete class can be used, but this 
+					is not recommended. The type may have any accessibility. The methods of a service are highly domain-specific, so 
+					this API specification cannot give concrete advice about their form or function. However, there are two general guidelines:
+					</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+							<p>
+								A service should declare as many methods as needed to allow service providers to communicate their 
+								domain-specific properties and other quality-of-implementation factors. An application which obtains a 
+								service loader for the service may then invoke these methods on each instance of a service provider, 
+								in order to choose the best provider for the application.
+							</p>						
+						</li><li class="listitem">
+							<p>
+								A service should express whether its service providers are intended to be direct implementations of the 
+								service or to be an indirection mechanism such as a "proxy" or a "factory". Service providers tend to be 
+								indirection mechanisms when domain-specific objects are relatively expensive to instantiate; in this case, 
+								the service should be designed so that service providers are abstractions which create the "real" implementation 
+								on demand. For example, the <code class="code">CodecFactory</code> service expresses through its name that its service 
+								providers are factories for codecs, rather than codecs themselves, because it may be expensive or complicated 
+								to produce certain codecs.
+							</p>						
+						</li></ol></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Developing service providers</strong></span>
+				</p>
+				<p>
+					A service provider is a single type, usually a concrete class. An interface or abstract class is permitted because it may declare a 
+					<code class="code">static provider()</code> method, discussed later. The type must be <code class="code">public</code> and must not be an inner class.
+				</p>
+				<p>
+					A service provider and its supporting code may be developed in a module, which is then deployed on the application module path 
+					or in a modular image. Alternatively, a service provider and its supporting code may be packaged as a JAR file and deployed on 
+					the application class path. The advantage of developing a service provider in a module is that the provider can be fully 
+					encapsulated to hide all details of its implementation.
+				</p>
+				<p>
+					An application that obtains a service loader for a given service is indifferent to whether providers of the service are 
+					deployed in modules or packaged as JAR files. The application instantiates service providers via the service loader's 
+					iterator, or via <code class="code">Provider</code> objects in the service loader's stream, without knowledge of the service providers' 
+					locations.
+				</p>
+				<p>
+					We can update <code class="code">app.Client</code> class (from previous section) as follows:
+					</p><pre class="programlisting">
+package app;
+
+import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
+import p1.GreeterIntf;
+
+public class Client {
+    public static void main(String[] args) {
+        ServiceLoader.load(GreeterIntf.class)
+                .stream()                
+                .filter((Provider p) -&gt; p.type().getSimpleName().startsWith("Greeter"))
+                .map(Provider::get)
+                .findFirst()
+                .ifPresent(s -&gt; s.greet());
+    }
+}
+					</pre><p>
+					An instance of the <code class="code">ServiceLoader.Provider</code> interface represents a service provider. Its <code class="code">type()</code> method
+					returns the <code class="code">Class</code> object of the service implementation. The <code class="code">get()</code> method instantiates and returns the
+					service provider. When you use the <code class="code">stream()</code> method, each element in the stream is of the <code class="code">ServiceLoader.Provider</code> 
+					type. You can filter the stream based on the class name or type of the provider, which will not instantiate the provider. You can 
+					use the <code class="code">type()</code> method in your filters. When you find the desired provider, call the <code class="code">get()</code> method to 
+					instantiate the provider. This way, you instantiate a provider when you know you need it, not when you are iterating through 
+					all providers.
+				</p>
+				<p>
+					<span class="bold"><strong>Deploying service providers as modules</strong></span>
+				</p>
+				<p>
+					A service provider that is developed in a module must be specified in a <code class="code">provides</code> directive in the module declaration. The 
+					<code class="code">provides</code> directive specifies both the service and the service provider; this helps to locate the provider when another 
+					module, with a <code class="code">uses</code> directive for the service, obtains a service loader for the service. It is strongly recommended that 
+					the module does not export the package containing the service provider. There is no support for a module specifying, in a <code class="code">provides</code> 
+					directive, a service provider in another module.
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						This a bad example of module definition:
+						</p><pre class="programlisting">
+module modP {
+    requires modS;
+    provides p1.GreeterIntf with p2.GreeterImpl;
+    exports p2; // BAD !!! We should not export implementation of the service 
+}
+						</pre><p>
+					</p>
+				</td></tr></table></div>
+				<p>
+					A service provider that is developed in a module has no control over when it is instantiated, since that occurs at the behest of the 
+					application, but it does have control over how it is instantiated:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								If the service provider declares a <code class="code">provider()</code> method, then the service loader invokes that method to obtain an 
+								instance of the service provider. A provider method is a <code class="code">public static</code> method named "provider" with no formal 
+								parameters and a return type that is assignable to the service's interface or class.
+							</p>
+							<p>
+								In this case, the service provider itself NEED NOT be assignable to the service's interface or class.
+							</p>
+						</li><li class="listitem">
+							<p>
+								If the service provider does not declare a <code class="code">provider()</code> method, then the service provider is instantiated directly, via 
+								its provider constructor. A provider constructor is a public constructor with no formal parameters.
+							</p>
+							<p>
+								In this case, the service provider MUST be assignable to the service's interface or class.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					A service provider that is deployed as an automatic module on the application module path must have a provider constructor. 
+					There is no support for a <code class="code">provider()</code> method in this case.
+				</p>
+				<p>
+					Let's create new service provider:
+					</p><pre class="programlisting">
+package p3;
+
+import p1.GreeterIntf;
+
+public class MyProvider {
+    public static GreeterIntf provider() {
+        return new GreeterIntf() {
+            @Override
+            public void greet() {
+                System.out.println("Greeting from MyProvider !");
+            }
+        };
+    }
+}
+
+					</pre><p>
+					</p><pre class="programlisting">
+module modPP {
+    requires modS;
+    provides p1.GreeterIntf with p3.MyProvider;
+}
+					</pre><p>
+					if you update the client class filter as follows:
+					</p><pre class="programlisting">
+...					
+.filter((Provider p) -&gt; p.type().getSimpleName().startsWith("GreeterIntf"))
+...
+					</pre><p>
+					The output will be:
+					</p><pre class="programlisting">
+Greeting from MyProvider !
+					</pre><p>															
+				</p>
+				<p>
+					Two points here: (a) the <code class="code">provider()</code> method was used to instantiate service implementation, and (b) the service provider type (<code class="code">MyProvider</code>)
+					is not assignable to service interface (<code class="code">GreeterIntf</code>).
+				</p>
+				<p>
+					<span class="bold"><strong>Service module dependency</strong></span>
+				</p>
+				<p>
+					Run the command:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --describe-module --file=service.jar
+
+modS jar:file:///C:/1Z0-817/service.jar/!module-info.class
+exports p1
+requires java.base mandated					
+					</pre><p>
+					As you can see is depends on <code class="code">java.base</code> module in our case (it always implicitly added).
+				</p>
+				<p>
+					<span class="bold"><strong>Provider module dependency</strong></span>
+				</p>
+				<p>
+					Run the command:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --describe-module --file=provider.jar
+
+modP jar:file:///C:/1Z0-817/provider.jar/!module-info.class
+requires java.base mandated
+requires modS
+provides p1.GreeterIntf with p2.GreeterImpl
+contains p2
+					</pre><p>
+					As you can see is depends on <code class="code">java.base</code> and <code class="code">modS</code> service module.
+				</p>				
+				<p>
+					<span class="bold"><strong>Client module dependency</strong></span>
+				</p>
+				<p>
+					Run the command:
+					</p><pre class="programlisting">
+C:\1Z0-817&gt;jar --create --file service-client.jar -C service-client .
+
+C:\1Z0-817&gt;jar --describe-module --file=service-client.jar
+
+modC jar:file:///C:/1Z0-817/service-client.jar/!module-info.class
+requires java.base mandated
+requires modS
+uses p1.GreeterIntf
+contains app
+					</pre><p>
+					As you can see is depends on <code class="code">java.base</code> and <code class="code">modS</code> service module. 
+					The client module (<code class="code">modC</code>) does not depend on provider module (<code class="code">modP</code>) 
+					and not aware of it at compile time.
+				</p>				
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch02.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch03.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter&nbsp;2.&nbsp;Services in a Modular Application&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;3.&nbsp;Java Interfaces</td></tr></table></div></body></html>

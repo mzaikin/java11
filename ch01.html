@@ -1,0 +1,353 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>Chapter&nbsp;1.&nbsp;Understanding Modules</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="prev" href="pt01.html" title="Part&nbsp;I.&nbsp;Exam Objectives"><link rel="next" href="ch01s02.html" title="1.2.&nbsp; Declare modules and enable access between modules"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter&nbsp;1.&nbsp;Understanding Modules</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="pt01.html">Prev</a>&nbsp;</td><th width="60%" align="center">Part&nbsp;I.&nbsp;Exam Objectives</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch01s02.html">Next</a></td></tr></table><hr></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a name="chap1"></a>Chapter&nbsp;1.&nbsp;Understanding Modules</h2></div></div></div>
+			
+			<div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c1s1"></a>1.1.&nbsp;
+					 Describe the Modular JDK
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#JEP_200" title="JEP 200: The Modular JDK">[JEP_200]</a> JEP 200: Modular SDK 
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					JDK was divided into a set of modules that can be combined at compile time, build time, and run time into a variety of configurations including, but not limited to:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Configurations corresponding to the full Java SE Platform, the full JRE, and the full JDK;
+							</p>
+						</li><li class="listitem">
+							<p>
+								Configurations roughly equivalent in content to each of the Compact Profiles defined in Java SE 8; and
+							</p>
+						</li><li class="listitem">
+							<p>
+								Custom configurations which contain only a specified set of modules possibly augmented by external library and application modules, and the modules 
+								transitively required by all of these modules.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					The definition of the modular structure should make a clear distinction between standard modules, whose specifications are governed by the Java Community Process, and 
+					modules that are specific to the JDK. It should also distinguish modules that are included in the Java SE Platform Specification, and thereby made mandatory in every 
+					Platform Implementation, from all other modules.
+				</p>
+				<p>
+					Project Jigsaw aims to design and implement a standard module system for the Java SE Platform and to apply that system to the Platform itself, and to the JDK. Its primary 
+					goals are to make implementations of the Platform more easily scalable down to small devices, improve security and maintainability, enable improved application performance, 
+					and provide developers with better tools for programming in the large.
+				</p>
+				<p>
+					The modular structure of the JDK implements the following principles:
+					</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+							<p>
+								Standard modules, whose specifications are governed by the JCP, have names starting with the string "<code class="code">java.</code>".
+							</p>
+						</li><li class="listitem">
+							<p>
+								All other modules are merely part of the JDK, and have names starting with the string "<code class="code">jdk.</code>".
+							</p>
+						</li><li class="listitem">
+							<p>
+								If a module exports a package that contains a type that contains a public or protected member that, in turn, refers 
+								to a type from some other module, then the first module must grant implied readability to the second, via <code class="code">requires 
+								transitive</code>. (This ensures that method-invocation chaining works in the obvious way.)
+							</p>
+						</li><li class="listitem">
+							<p>
+								A standard module may contain both standard and non-standard API packages. If a standard module exports a standard API 
+								package then the export may be qualified; if a standard module exports a non-standard API package then the export must 
+								be qualified. In either case, if a standard module exports a package with qualification then the export must be to some 
+								subset of the modules in the JDK. If a standard module is a Java SE module, i.e., is included in the Java SE Platform 
+								Specification, then it must not export any non-SE API packages, at least not without qualification.
+							</p>
+						</li><li class="listitem">
+							<p>
+								A standard module may depend upon one or more non-standard modules. It must not grant implied readability to any non-standard 
+								module. If it is a Java SE module then it must not grant implied readability to any non-SE module.
+							</p>
+						</li><li class="listitem">
+							<p>
+								A non-standard module must not export any standard API packages. A non-standard module may grant implied readability to a standard module.
+							</p>
+						</li></ol></div><p>
+					An important consequence of principles 4 and 5 is that code that depends only upon Java SE modules will depend only upon standard Java SE types, and thus 
+					be portable to all Implementations of the Java SE Platform.
+				</p>
+				<p>
+					<span class="bold"><strong>The module list</strong></span>
+				</p>
+				<p>
+					You can list all JDK modules by running this command:
+					</p><pre class="programlisting">
+java --list-modules
+					</pre><p>
+					List of Java 11 modules is shown below:
+					</p><pre class="programlisting">
+java.base@11.0.2
+java.compiler@11.0.2
+java.datatransfer@11.0.2
+java.desktop@11.0.2
+java.instrument@11.0.2
+java.logging@11.0.2
+java.management@11.0.2
+java.management.rmi@11.0.2
+java.naming@11.0.2
+java.net.http@11.0.2
+java.prefs@11.0.2
+java.rmi@11.0.2
+java.scripting@11.0.2
+java.se@11.0.2
+java.security.jgss@11.0.2
+java.security.sasl@11.0.2
+java.smartcardio@11.0.2
+java.sql@11.0.2
+java.sql.rowset@11.0.2
+java.transaction.xa@11.0.2
+java.xml@11.0.2
+java.xml.crypto@11.0.2
+jdk.accessibility@11.0.2
+jdk.aot@11.0.2
+jdk.attach@11.0.2
+jdk.charsets@11.0.2
+jdk.compiler@11.0.2
+jdk.crypto.cryptoki@11.0.2
+jdk.crypto.ec@11.0.2
+jdk.crypto.mscapi@11.0.2
+jdk.dynalink@11.0.2
+jdk.editpad@11.0.2
+jdk.hotspot.agent@11.0.2
+jdk.httpserver@11.0.2
+jdk.internal.ed@11.0.2
+jdk.internal.jvmstat@11.0.2
+jdk.internal.le@11.0.2
+jdk.internal.opt@11.0.2
+jdk.internal.vm.ci@11.0.2
+jdk.internal.vm.compiler@11.0.2
+jdk.internal.vm.compiler.management@11.0.2
+jdk.jartool@11.0.2
+jdk.javadoc@11.0.2
+jdk.jcmd@11.0.2
+jdk.jconsole@11.0.2
+jdk.jdeps@11.0.2
+jdk.jdi@11.0.2
+jdk.jdwp.agent@11.0.2
+jdk.jfr@11.0.2
+jdk.jlink@11.0.2
+jdk.jshell@11.0.2
+jdk.jsobject@11.0.2
+jdk.jstatd@11.0.2
+jdk.localedata@11.0.2
+jdk.management@11.0.2
+jdk.management.agent@11.0.2
+jdk.management.jfr@11.0.2
+jdk.naming.dns@11.0.2
+jdk.naming.rmi@11.0.2
+jdk.net@11.0.2
+jdk.pack@11.0.2
+jdk.rmic@11.0.2
+jdk.scripting.nashorn@11.0.2
+jdk.scripting.nashorn.shell@11.0.2
+jdk.sctp@11.0.2
+jdk.security.auth@11.0.2
+jdk.security.jgss@11.0.2
+jdk.unsupported@11.0.2
+jdk.unsupported.desktop@11.0.2
+jdk.xml.dom@11.0.2
+jdk.zipfs@11.0.2
+					</pre><p> 
+				</p>
+				<p>
+					<span class="bold"><strong>The module graph</strong></span>
+				</p>
+				<p>
+					The modular structure of the JDK can be visualized as a graph: Each module is a node, and there is a directed edge from one module to another if the first depends 
+					upon the second. The full module graph has too many edges to be displayed easily.
+				</p>
+				<p>
+					Here is the <a class="ulink" href="images/java11-graph.png" target="_top">Java SE 11 Module Graph</a>. 
+				</p>
+				<p>
+					Please take a look at appendix for the instruction how you can re-create it: <a class="xref" href="apa.html#a1s1" title="1.1.&nbsp;How to build JDK module graph">&#8220;How to build JDK module graph&#8221;</a> 
+				</p>
+				<p>
+					Herewith a guided tour of the Java 11 module graph:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								Standard Java SE modules (<code class="code">java.</code>) are colored Cyan; non-SE modules (<code class="code">jdk.</code>) are colored Dark Sea Green.							
+							</p>
+						</li><li class="listitem">
+							<p>
+								If one module depends upon another, then there is an edge from the first module to the second. 							
+							</p>
+						</li><li class="listitem">
+							<p>
+								At the very bottom is the <code class="code">java.base</code> module, which contains essential classes such as <code class="code">java.lang.Object</code> 
+								and <code class="code">java.lang.String</code>. The base module depends upon no module, and every other module depends upon the base module. 
+							</p>
+						</li><li class="listitem">
+							<p>
+								Near the top is the <code class="code">java.se</code> module, which gathers together all of the modules that comprise the Java SE Platform. This is an example 
+								of an <span class="emphasis"><em>aggregator module</em></span>, which collects and re-exports the content of other modules but adds no content of its own. A run-time 
+								system configured to contain the <code class="code">java.se</code> module will contain all of the API packages of the Java SE Platform. A module is included in 
+								the Java SE Platform Specification if, and only if, it is a standard module reachable from the <code class="code">java.se</code> module.		
+							</p>
+						</li><li class="listitem">
+							<p>
+								The non-standard modules (<code class="code">jdk.</code>) include debugging and serviceability tools and APIs, development tools, and various service providers, which 
+								are made available to other modules via the existing <code class="code">java.util.ServiceLoader</code> mechanism.
+							</p>
+						</li><li class="listitem">
+							<p>
+								The <code class="code">java.smartcardio</code> module is standard but not part of the Java SE Platform Specification, hence its name starts with the 
+								string "<code class="code">java.</code>" but it is not reachable from the <code class="code">java.se</code> module.
+							</p>
+						</li></ul></div><p>					
+				</p>
+				<p>
+					<span class="bold"><strong>Using <code class="code">jlink</code> to build Java Runtime Environments</strong></span>
+				</p>
+				<p>
+					Since Java 9 the Java Platform Module System (JPMS) has divided the monolithic <code class="code">rt.jar</code> and <code class="code">tools.jar</code> files into more than 70 
+					distinct modules.					
+				</p>
+				<p>
+					As of JDK 9 also eliminated the distinction between the Java Development Kit (JDK) and the Java Runtime Environment (JRE). In the past, there 
+					was a sub-directory in the JDK called <code class="code">jre</code> which only contained things that were required to run a Java application.
+				</p>
+				<p>
+					In JDK 9 and later, the idea is to build Java Runtime Environments that are tailored to the requirements of a specific application. Rather 
+					than including all modules, you need only include the <code class="code">java.base</code> module (which all runtimes must include by definition) as well 
+					as any other modules the application references. All <code class="code">transitive</code> module dependencies must also be included. JDK 9 and later 
+					provides the <code class="code">jlink</code> command to assemble and optimize a set of modules and their dependencies into a custom runtime image.
+				</p>
+				<p>
+					Let's create a sample modular application, as shown below:
+					</p><pre class="programlisting">
+C:\1Z0-817-JLINK
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;app
+        App.java
+					</pre><p>
+					<code class="code">module-info.java</code>:
+					</p><pre class="programlisting">
+module MOD {    
+}
+					</pre><p>
+					<code class="code">App.java</code>:
+					</p><pre class="programlisting">
+package app;
+
+public class App {
+    public static void main(String[] args) {
+        System.out.println("Hello jlink !");
+    }
+}
+					</pre><p>
+				</p>
+				<p>
+					To run this program, we only need <code class="code">App</code>, <code class="code">String</code>, System, and <code class="code">Object</code> classes.
+				</p>
+				<p>
+					With help of <code class="code">jlink</code> command line utility we can create our own small JRE that contains only the relevant classes 
+					and packages that application needs to use, without wasting memory and disk space.
+				</p>
+				<p>
+					 Let's compile the code:
+					 </p><pre class="programlisting">
+C:\1Z0-817-jlink&gt;javac -p . module-info.java app/App.java
+					 </pre><p>
+					 </p><pre class="programlisting">
+C:\1Z0-817-JLINK
+&#9474;   module-info.class
+&#9474;   module-info.java
+&#9474;
+&#9492;&#9472;&#9472;&#9472;app
+        App.class
+        App.java
+					 </pre><p>
+				</p>
+				<p>
+					Now, create the modular JAR:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink&gt;jar cf app.jar -C . .
+					</pre><p>
+				</p>
+				<p>
+					In order to use <code class="code">jlink</code>, we need to know the list of the Java SE modules that the application uses and 
+					that we should include in our custom JRE. Let's use the <code class="code">jdeps</code> command to list the modules used in the 
+					application:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink&gt;jdeps --list-deps app.jar
+   java.base
+					</pre><p>
+				</p>
+				<p>
+					To create a custom JRE for a module based application we use the <code class="code">jlink</code> command:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink&gt;jlink --add-modules java.base --output java-runtime
+					</pre><p>
+				</p>
+				<p>
+					The comma separated list of modules after the <code class="code">-&#8211;add-modules</code> option tells <code class="code">jlink</code> which modules to 
+					include in the new JRE.
+				</p>
+				<p>
+					The <code class="code">-&#8211;output</code> option defines the target directory where our custom JRE should be generated.
+				</p>
+				<p>
+					The size of custom JRE (created with Java 11) is about 39 Mbytes:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink\java-runtime&gt;dir /s
+...
+     Total Files Listed:
+              91 File(s)     41,226,208 bytes
+					</pre><p> 
+				</p>
+				<p>
+					To test our new JRE, let's try to run our module by navigating inside the <code class="code">bin</code> 
+					folder of our <code class="code">java-runtime</code> directory and run the command:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink\java-runtime\bin&gt;java.exe -p ../../app.jar --module MOD/app.App
+Hello jlink !
+					</pre><p>
+				</p>
+				<p>
+					You can also create a custom JRE with executable launcher scripts (for Windows and Linux). For this, you need to run 
+					the <code class="code">jlink</code> command that has an extra <code class="code">-&#8211;launcher</code> option to create launcher with the application module 
+					and main class (NOTE: delete old custom JRE before creating new):
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink&gt;jlink -p ./app.jar --add-modules java.base,MOD --output java-runtime --launcher app=MOD/app.App
+					</pre><p>
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink\java-runtime\bin&gt;dir app*
+ 
+  Directory of C:\1Z0-817-jlink\java-runtime\bin
+
+05/25/2019  00:45                91 app
+05/25/2019  00:45               100 app.bat
+               2 File(s)            191 bytes
+					</pre><p>
+					Generated <code class="code">app.bat</code>:
+					</p><pre class="programlisting">
+@echo off
+set JLINK_VM_OPTIONS=
+set DIR=%~dp0
+"%DIR%\java" %JLINK_VM_OPTIONS% -m MOD/app.App %*
+					</pre><p>
+					Run the script:
+					</p><pre class="programlisting">
+C:\1Z0-817-jlink\java-runtime\bin&gt;app.bat
+Hello jlink !
+					</pre><p>
+				</p>
+			</div>
+			
+			
+		</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="pt01.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="pt01.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch01s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Part&nbsp;I.&nbsp;Exam Objectives&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;1.2.&nbsp;
+					 Declare modules and enable access between modules
+				</td></tr></table></div></body></html>

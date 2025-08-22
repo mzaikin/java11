@@ -1,0 +1,258 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>4.6.&nbsp; Use Collectors with streams, including the groupingBy and partitioningBy operation</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"><link rel="prev" href="ch04s05.html" title="4.5.&nbsp; Sort a collection using lambda expressions"><link rel="next" href="ch05.html" title="Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.6.&nbsp;
+					Use <code class="code">Collectors</code> with streams, including the <code class="code">groupingBy</code> and <code class="code">partitioningBy</code> operation
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s05.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch05.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c4s6"></a>4.6.&nbsp;
+					Use <code class="code">Collectors</code> with streams, including the <code class="code">groupingBy</code> and <code class="code">partitioningBy</code> operation
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					When you are done with a stream, you often just want to look at the results instead of reducing them to a value.
+				</p>
+				<p>
+					You can use <code class="code">Stream.collect(...)</code> method. It takes three arguments:
+					</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+							<p>
+								A  supplier to make new instances of the target object, for example, a constructor for a hash set
+							</p>
+						</li><li class="listitem">
+							<p>
+								An accumulator that adds an element to the target, for example, an <code class="code">add</code> method
+							</p>
+						</li><li class="listitem">
+							<p>
+								An combiner that merges two objects into one, such as <code class="code">addAll</code>
+							</p>
+						</li></ol></div><p>
+				</p>
+				<p>
+					There is a convenient <code class="code">Collector</code> interface for these three functions, and a  <code class="code">Collectors</code>
+					class with factory methods for common collectors. To collect a stream into a list or set, you can simply call:
+					</p><pre class="programlisting">
+
+List&lt;String&gt; result = stream.collect(Collectors.toList());
+
+					</pre><p>
+					or
+					</p><pre class="programlisting">
+
+Set&lt;String&gt; result = stream.collect(Collectors.toSet());
+
+					</pre><p>
+					or if you want to control which kind of set you get, use the following call instead:
+					</p><pre class="programlisting">
+
+TreeSet&lt;String&gt; result = stream.collect(Collectors.toCollection(TreeSet::new));
+
+					</pre><p>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						<code class="code">java.util.stream.Collector</code> is an interface.
+					</p>
+					<p>
+						<code class="code">java.util.stream.Collectors</code> is a <code class="code">final</code> class whose
+						<code class="code">static</code> methods return pre-defined <code class="code">Collector</code> implementations.
+					</p>
+				</td></tr></table></div>
+				<p>
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Collectors.averagingDouble(ToDoubleFunction&lt;? super T&gt; mapper)</code></strong></span>
+							</p>
+							<p>
+								<code class="code">Collectors.averagingDouble</code> calculates the average of stream element as <code class="code">double</code> data type.
+								It returns a <code class="code">Collector</code> instance. The <code class="code">collect</code> method of stream can accept the
+								<code class="code">Collector</code> instance and will return the average value calculated by
+								<code class="code">Collectors.averagingDouble</code>.
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+List&lt;String&gt; list = Arrays.asList("A", "BB", "CCC", "DDDD", "CCCCC");
+double result = list.stream().collect(Collectors.averagingDouble(s -&gt; s.length()));
+System.out.println(result);
+
+								</pre><p>
+								output:
+								</p><pre class="programlisting">
+3.0
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Collectors.groupingBy(Function&lt;? super T,? extends K&gt; classifier)</code></strong></span>
+							</p>
+							<p>
+								A "group by" operation on input elements of type <code class="code">T</code>, grouping elements according to a
+								classification function, and returning the results in a map.
+							</p>
+							<p>
+								</p><pre class="programlisting">
+public class Employee {
+    private String name;
+    private String department;
+
+    public Employee(String n, String d) {
+        name = n;
+        department = d;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " from " + getDepartment() + " dept";
+    }
+}
+								</pre><p>
+							</p>
+							<p>
+								A common database operation is to group items in a set, based on one or more properties. It can
+								be easily translated in a single, very readable statement by rewriting it in a more functional style
+								as encouraged by Java 8.0. Suppose you want to group employees in a company based on
+								their department. You can easily perform this task using a collector returned by the
+								<code class="code">Collectors.groupingBy</code> factory method as follows:
+							</p>
+							<p>
+								</p><pre class="programlisting">
+
+Employee e1 = new Employee("Mikalai", "Development");
+Employee e2 = new Employee("Volha", "HR");
+Employee e3 = new Employee("Anastasia", "Management");
+Employee e4 = new Employee("Daria", "Management");
+Employee e5 = new Employee("Ivan", "Management");
+
+Stream&lt;Employee&gt; str = Stream.of(e1, e2, e3, e4, e5);
+
+// Group Employees by department
+Map&lt;String, List&lt;Employee&gt;&gt; map = str.collect(Collectors.groupingBy(Employee::getDepartment));
+
+System.out.println(map.get("Management"));
+
+								</pre><p>
+								Here, we passing to the <code class="code">groupingBy</code> method a <code class="code">Function</code> (expressed in the form
+								of a method reference) extracting the corresponding department for each <code class="code">Employee</code> in the
+								stream. We call this <code class="code">Function</code> a classification function because it is used to classify
+								the elements of the stream into different groups. The result of this grouping operation is a
+								<code class="code">java.util.Map</code> having as map key the value returned by the classification function and as
+								corresponding map value a list of all the items in the stream having that classified value:
+								</p><pre class="programlisting">
+[Anastasia from Management dept, Daria from Management dept, Ivan from Management dept]
+								</pre><p>
+							</p>
+							<p>
+								It is possible to pass a second collector to the <code class="code">groupingBy</code> method to achieve a
+								multilevel grouping. For instance, it is possible to count the number of employees in
+								each department, by passing the <code class="code">Collectors.counting()</code> collector as a second
+								argument to the <code class="code">groupingBy</code> collector:
+								</p><pre class="programlisting">
+
+// Counting Employees by department
+Map&lt;String, Long&gt; map = str.collect(Collectors.groupingBy(Employee::getDepartment, Collectors.counting()));
+System.out.println(map.get("Management"));
+
+								</pre><p>
+								output:
+								</p><pre class="programlisting">
+3
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Collectors.joining()</code></strong></span>
+							</p>
+							<p>
+								The collector returned by the <code class="code">Collectors.joining()</code> factory method concatenates into a
+								single string all strings resulting from invoking the <code class="code">toString()</code> method on each object
+								in the stream. This means you can concatenate the names of all the employees in the company as
+								follows:
+								</p><pre class="programlisting">
+String names = str.map(Employee::getName).collect(Collectors.joining());
+								</pre><p>
+								Note that <code class="code">joining()</code> internally makes use of a <code class="code">StringBuilder</code> to append
+								the generated strings into one. It produces the following string:
+								</p><pre class="programlisting">
+MikalaiVolhaAnastasiaDariaIvan
+								</pre><p>
+								which is not very readable.
+							</p>
+							<p>
+								Fortunately, the joining factory method has an overloaded version
+								that accepts a delimiter string between two consecutive elements, so you can obtain a
+								comma-separated list of the employees' names with:
+								</p><pre class="programlisting">
+String names = str.map(Employee::getName).collect(Collectors.joining(", "));
+								</pre><p>
+								It produces the following string:
+								</p><pre class="programlisting">
+Mikalai, Volha, Anastasia, Daria, Ivan
+								</pre><p>
+							</p>
+							<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+								<p>
+									<code class="code">Collectors.joining("")</code> is equivalent to <code class="code">Collectors.joining()</code>
+								</p>
+							</td></tr></table></div>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Collectors.partitioningBy(Predicate&lt;? super T&gt; predicate)</code></strong></span>
+							</p>
+							<p>
+								Partitions the input elements according to a <code class="code">Predicate</code>.
+							</p>
+							<p>
+								When the classifier function is a <code class="code">Predicate</code> function (that is, a function returning
+								a <code class="code">boolean</code> value), the stream elements are partitioned into two lists: those where
+								the function returns <code class="code">true</code> and <code class="code">false</code>. In this case, it is more efficient to
+								use  <code class="code">partitioningBy</code> instead of  <code class="code">groupingBy</code>. For example, here we split
+								all employees into those that are managers, and all others:
+								</p><pre class="programlisting">
+
+Employee e1 = new Employee("Mikalai", "Development");
+Employee e2 = new Employee("Volha", "HR");
+Employee e3 = new Employee("Anastasia", "Management");
+Employee e4 = new Employee("Daria", "Management");
+Employee e5 = new Employee("Ivan", "Management");
+Stream&lt;Employee&gt; str = Stream.of(e1, e2, e3, e4, e5);
+
+// Parition Employees to managers and others
+Map&lt;Boolean, List&lt;Employee&gt;&gt; map = str.collect(Collectors.partitioningBy(e -&gt; "Management".equals(e.getDepartment())));
+
+System.out.println(map.get(Boolean.TRUE));
+
+								</pre><p>
+								resulting in:
+								</p><pre class="programlisting">
+[Anastasia from Management dept, Daria from Management dept, Ivan from Management dept]
+								</pre><p>
+								You can think of partitioning as a special case of grouping. Partitioning may only use <code class="code">Boolean</code>
+								as <code class="code">Map</code> key, so you can have maximum two entries (each entry represented by a list of
+								stream elements) in the resulting map.
+							</p>
+						</li></ul></div><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s05.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.5.&nbsp;
+					Sort a collection using lambda expressions
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;Chapter&nbsp;5.&nbsp;Java File I/O (NIO.2)</td></tr></table></div></body></html>

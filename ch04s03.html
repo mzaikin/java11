@@ -1,0 +1,236 @@
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+   <title>4.3.&nbsp; Use the Optional class</title><link rel="stylesheet" type="text/css" href="ocpjd11-upgrade-guide.css"><meta name="generator" content="DocBook XSL Stylesheets V1.79.1"><link rel="home" href="index.html" title="Exam 1Z0-817: Upgrade OCP Java 6, 7 &amp; 8 to Java SE 11 Developer Study Guide"><link rel="up" href="ch04.html" title="Chapter&nbsp;4.&nbsp;Lambda Operations on Streams"><link rel="prev" href="ch04s02.html" title="4.2.&nbsp; Search stream data using search findFirst, findAny, anyMatch, allMatch and noneMatch methods"><link rel="next" href="ch04s04.html" title="4.4.&nbsp; Perform calculations using count, max, min, average and sum stream operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">4.3.&nbsp;
+					 Use the <code class="code">Optional</code> class
+				</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a>&nbsp;</td><th width="60%" align="center">Chapter&nbsp;4.&nbsp;Lambda Operations on Streams</th><td width="20%" align="right">&nbsp;<a accesskey="n" href="ch04s04.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="c4s3"></a>4.3.&nbsp;
+					 Use the <code class="code">Optional</code> class
+				</h2></div></div></div>
+				
+				<div class="note" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Note"><tr><td rowspan="2" align="center" valign="top" width="81px"><img alt="[Note]" src="images.admon/note.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<a class="xref" href="bi01.html#CORE_JAVA9_IMPATIENT" title="Cay S. Horstmann - Core Java SE 9 for the Impatient 2nd Edition">[CORE_JAVA9_IMPATIENT]</a> Chapter 8. Section 7. The Optional Type.
+							</p>
+						</li></ul></div>
+				</td></tr></table></div>
+				<p>
+					A <code class="code">java.util.Optional&lt;T&gt;</code> object is either a wrapper for an <code class="code">Object</code> of type
+					<code class="code">T</code> or a wrapper for no object. It is intended as a safer alternative than a reference of
+					type <code class="code">T</code> that refers to an <code class="code">Object</code> or <code class="code">null</code>.
+				</p>
+				<p>
+					Following is the declaration for <code class="code">java.util.Optional&lt;T&gt;</code> class:
+					</p><pre class="programlisting">
+
+public final class Optional&lt;T&gt; extends Object {
+    ...
+}
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Creating Optional objects</strong></span>
+				</p>
+				<p>
+					The first step before working with <code class="code">Optional</code> is to learn how to create optional objects. There are
+					several ways:
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<span class="bold"><strong>Empty <code class="code">Optional</code></strong></span>
+							</p>
+							<p>
+								You can get hold of an empty optional object using the static factory method
+								<code class="code">Optional.empty()</code>:
+								</p><pre class="programlisting">
+
+Optional&lt;String&gt; str = Optional.empty();
+
+								</pre><p>
+							</p>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Optional</code> from a non-null value</strong></span>
+							</p>
+							<p>
+								You can also create an optional from a non-null value with the <code class="code">static</code> factory method
+								<code class="code">Optional.of(...)</code>:
+								</p><pre class="programlisting">
+
+String str = "ABC";
+Optional&lt;String&gt; optStr = Optional.of(str);
+
+								</pre><p>
+							</p>
+							<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+								<p>
+									If <code class="code">str</code> were <code class="code">null</code>, a <code class="code">NullPointerException</code> would
+									be immediately thrown!
+								</p>
+							</td></tr></table></div>
+						</li><li class="listitem">
+							<p>
+								<span class="bold"><strong><code class="code">Optional</code> from <code class="code">null</code>able value</strong></span>
+							</p>
+							<p>
+								Finally, by using the <code class="code">static</code> factory method <code class="code">Optional.ofNullable(...)</code>, you can
+								create an <code class="code">Optional</code> object that may hold a <code class="code">null</code> value:
+								</p><pre class="programlisting">
+
+String str = null;
+Optional&lt;String&gt; optStr = Optional.ofNullable(str);
+
+								</pre><p>
+								In the example above, since the <code class="code">str</code> is <code class="code">null</code>, the resulting
+								<code class="code">Optional</code> object would be <span class="bold"><strong>empty</strong></span>.
+							</p>
+							<p> 
+								The <code class="code">ofNullable(...)</code> method is intended as a bridge from the use of <code class="code">null</code>
+								values to optional values. The <code class="code">Optional.ofNullable(obj)</code> returns
+								<code class="code">Optional.of(obj)</code> if <code class="code">obj</code> is not <code class="code">null</code>, and
+								<code class="code">Optional.empty()</code> otherwise.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Unwrapping an <code class="code">Optional</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">Optional</code> class provides several instance methods to read the value contained
+					by an <code class="code">Optional</code> instance.
+					</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
+							<p>
+								<code class="code">Optional.get()</code> - is the simplest but also the least safe of these methods. It returns
+								the wrapped value if present but throws a <code class="code">NoSuchElementException</code> otherwise. For this
+								reason, using this method is almost always a bad idea unless you are really sure the optional
+								contains a value.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Optional.orElse(T other)</code> it allows you to provide a default value for when the optional
+								does not contain a value.
+							</p>
+							<p>
+								NOTE: the <code class="code">other</code> value may be <code class="code">null</code>.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Optional.orElseGet(Supplier&lt;? extends T&gt; other)</code> is the lazy counterpart of the
+								<code class="code">orElse</code> method, because the supplier is invoked only if the optional contains no
+								value. You should use this method either when the default value is time-consuming to create
+								or you want to be sure this is done only if the optional is empty.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">&lt;X extends Throwable&gt; Optional.orElseThrow(Supplier&lt;? extends X&gt; exceptionSupplier)</code> is similar to
+								the <code class="code">get()</code> method in that it throws an exception when the optional is empty, but in
+								this case it allows you to choose the type of exception that you want to throw.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Optional.ifPresent(Consumer&lt;? super T&gt; consumer)</code> lets you execute the action
+								given as argument if a value is present; otherwise no action is taken.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Optional.isPresent()</code> returns <code class="code">true</code> if the <code class="code">Optional</code> contains
+								a value, <code class="code">false</code> otherwise.
+							</p>
+						</li><li class="listitem">
+							<p>
+								<code class="code">Optional.isEmpty()</code> returns <code class="code">true</code> if the <code class="code">Optional</code> is empty, 
+								<code class="code">false</code> otherwise.
+							</p>
+						</li></ul></div><p>
+				</p>
+				<p>
+					<span class="bold"><strong>Converting an <code class="code">Optional</code> into a <code class="code">Stream</code></strong></span>
+				</p>
+				<p>
+					The <code class="code">Optional.stream()</code> method allows you to convert an <code class="code">Optional</code> to a <code class="code">Stream</code>.
+				</p>
+				<p>
+					If the <code class="code">Optional</code> contains a value, it will return a <code class="code">Stream</code> containing only that 
+					value, otherwise, it will return an empty <code class="code">Stream</code>:
+					</p><pre class="programlisting">
+
+Optional&lt;Integer&gt; in = Optional.of(1);
+in.stream()
+    .filter(i -&gt; i &gt; 0)
+    .forEach(System.out::println);
+
+					</pre><p>
+					</p><pre class="programlisting">
+1
+					</pre><p>
+					The <code class="code">Optional.stream()</code> method can be helpful when you are dealing with a stream of 
+					<code class="code">Optional</code> elements. It will help to filter out empty optionals and keep the ones 
+					with values.
+				</p>
+				<p>
+					Assume we have a list of optionals received from a method, and some of the optionals are empty:					
+					</p><pre class="programlisting">
+
+Stream&lt;Optional&lt;String&gt;&gt; stream = Stream.of(
+    Optional.of("Java"),
+    Optional.empty(), 
+    Optional.of("is"),
+    Optional.empty(), 
+    Optional.of("good"));
+
+					</pre><p>
+					In Java 8.0 you could remove empty optionals as follows:
+					</p><pre class="programlisting">
+
+List&lt;String&gt; list = stream
+    .flatMap(o -&gt; o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+    .collect(Collectors.toList());
+
+					</pre><p>
+					In Java 9.0 and later you can remove empty optionals with shorter code using <code class="code">flatMap()</code>:
+					</p><pre class="programlisting">
+
+List&lt;String&gt; list = stream 
+    .flatMap(Optional::stream)
+    .collect(Collectors.toList());
+
+					</pre><p>
+				</p>
+				<p>
+					<span class="bold"><strong>The <code class="code">map()</code> and <code class="code">flatMap()</code> in <code class="code">Optional</code></strong></span>
+				</p>
+				<div class="important" style="margin-left: 0.1in; margin-right: 0.5in;"><table border="0" summary="Important"><tr><td rowspan="2" align="center" valign="top" width="25"><img alt="[Important]" src="images.admon/important.gif"></td><th align="left"></th></tr><tr><td align="left" valign="top">
+					<p>
+						Both <code class="code">Optional.map()</code> and <code class="code">Optional.flatMap()</code> 
+						return an <code class="code">Optional</code>.
+					</p>
+					<p>
+						Use <code class="code">Optional.map()</code> if the function returns the object you need; or 
+						<code class="code">Optional.flatMap()</code> if the function returns an <code class="code">Optional</code>.
+					</p>
+				</td></tr></table></div>
+				<p>
+					 If the function returns the exact type we need:
+					 </p><pre class="programlisting">
+
+Optional&lt;String&gt; s = Optional.of("Java");
+s = s.map(String::toUpperCase); // function returns String
+s.ifPresent(System.out::print);
+
+					 </pre><p>
+					 If we have a function that returns an <code class="code">Optional</code> then using <code class="code">map()</code> would lead 
+					 to a nested structure of optionals, as the <code class="code">map()</code> does an additional wrapping. Use 
+					 <code class="code">flatMap()</code> to keep a flat structure:
+					 </p><pre class="programlisting">
+
+Optional&lt;String&gt; s = Optional.of("Java");
+s = s.flatMap(val -&gt; Optional.of(val.toUpperCase())); // function returns Optional&lt;String&gt;
+s.ifPresent(System.out::print);
+
+					 </pre><p>
+				</p>
+			</div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch04s02.html">Prev</a>&nbsp;</td><td width="20%" align="center"><a accesskey="u" href="ch04.html">Up</a></td><td width="40%" align="right">&nbsp;<a accesskey="n" href="ch04s04.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">4.2.&nbsp;
+					Search stream data using search <code class="code">findFirst</code>, <code class="code">findAny</code>, <code class="code">anyMatch</code>, <code class="code">allMatch</code> and 
+					<code class="code">noneMatch</code> methods
+				&nbsp;</td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top">&nbsp;4.4.&nbsp;
+					 Perform calculations using <code class="code">count</code>, <code class="code">max</code>, <code class="code">min</code>, <code class="code">average</code> and <code class="code">sum</code> stream operations
+				</td></tr></table></div></body></html>
